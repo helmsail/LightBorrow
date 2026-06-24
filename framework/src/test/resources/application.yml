@@ -1,0 +1,9 @@
+lightborrow:
+  id:
+    worker-id: 1
+
+spring:
+  main:
+    banner-mode: off
+  jackson:
+    default-property-inclusion: non_null

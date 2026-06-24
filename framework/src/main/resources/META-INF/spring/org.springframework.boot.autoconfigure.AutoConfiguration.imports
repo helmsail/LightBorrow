@@ -1,0 +1,7 @@
+com.helmsail.lightborrow.framework.config.RedisConfig
+com.helmsail.lightborrow.framework.config.RestClientConfig
+com.helmsail.lightborrow.framework.config.WebConfig
+com.helmsail.lightborrow.framework.config.JacksonConfig
+com.helmsail.lightborrow.framework.config.IdAutoConfiguration
+com.helmsail.lightborrow.framework.config.FrameworkAutoConfiguration
+com.helmsail.lightborrow.framework.mq.StreamConfig
