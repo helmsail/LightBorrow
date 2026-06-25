@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 日期工具类。基于 Java 8 Time API。
+ * 日期工具类。基于 Java 8 Time API，线程安全。
  */
 public final class DateUtil {
 
@@ -31,8 +31,7 @@ public final class DateUtil {
     // ========== 格式化 ==========
 
     public static String format(LocalDateTime dateTime, String pattern) {
-        DateTimeFormatter formatter = getCachedFormatter(pattern);
-        return dateTime.format(formatter);
+        return dateTime.format(getCachedFormatter(pattern));
     }
 
     public static String format(LocalDateTime dateTime) {
@@ -40,8 +39,7 @@ public final class DateUtil {
     }
 
     public static String format(LocalDate date, String pattern) {
-        DateTimeFormatter formatter = getCachedFormatter(pattern);
-        return date.format(formatter);
+        return date.format(getCachedFormatter(pattern));
     }
 
     public static String format(TemporalAccessor temporal, DateTimeFormatter formatter) {
@@ -51,8 +49,7 @@ public final class DateUtil {
     // ========== 解析 ==========
 
     public static LocalDateTime parse(String dateStr, String pattern) {
-        DateTimeFormatter formatter = getCachedFormatter(pattern);
-        return LocalDateTime.parse(dateStr, formatter);
+        return LocalDateTime.parse(dateStr, getCachedFormatter(pattern));
     }
 
     public static LocalDateTime parse(String dateStr) {
@@ -60,8 +57,7 @@ public final class DateUtil {
     }
 
     public static LocalDate parseDate(String dateStr, String pattern) {
-        DateTimeFormatter formatter = getCachedFormatter(pattern);
-        return LocalDate.parse(dateStr, formatter);
+        return LocalDate.parse(dateStr, getCachedFormatter(pattern));
     }
 
     // ========== 当前时间 ==========
@@ -94,7 +90,6 @@ public final class DateUtil {
 
     // ========== 内部方法 ==========
 
-    /** 缓存常用 pattern 避免重复创建 */
     private static DateTimeFormatter getCachedFormatter(String pattern) {
         if (DEFAULT_PATTERN.equals(pattern)) {
             return DEFAULT_FORMATTER;

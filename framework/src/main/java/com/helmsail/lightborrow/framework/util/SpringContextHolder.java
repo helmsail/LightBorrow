@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 /**
  * Spring Context 持有者。由 JacksonConfig 通过 @Bean 注册。
+ * 用于在非 Bean 环境中获取 Spring 管理的对象。
  */
 public class SpringContextHolder implements ApplicationContextAware {
 

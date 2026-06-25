@@ -6,6 +6,9 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
+/**
+ * 雪花算法 ID 生成器配置属性。
+ */
 @Validated
 @Data
 @ConfigurationProperties(prefix = "lightborrow.id")

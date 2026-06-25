@@ -3,19 +3,17 @@ package com.helmsail.lightborrow.framework.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.BusinessException;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
  * 统一 API 返回体 {code, msg, data}。
+ * 所有 Controller 接口统一使用此类型返回。
  */
-@Data
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Result<T> implements Serializable {
 
@@ -30,6 +28,15 @@ public class Result<T> implements Serializable {
     private String msg;
     /** 返回数据 */
     private T data;
+
+    private Result() {
+    }
+
+    private Result(int code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
 
     public boolean isSuccess() {
         return code == SUCCESS_CODE;
@@ -49,10 +56,6 @@ public class Result<T> implements Serializable {
         return new Result<>(SUCCESS_CODE, msg, data);
     }
 
-    public static <T> Result<T> success(String msg) {
-        return new Result<>(SUCCESS_CODE, msg, null);
-    }
-
     // ========== 失败 ==========
 
     public static <T> Result<T> error(int code, String msg) {
@@ -70,5 +73,4 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> error(BusinessException e) {
         return new Result<>(e.getCode(), e.getMessage(), null);
     }
-
 }

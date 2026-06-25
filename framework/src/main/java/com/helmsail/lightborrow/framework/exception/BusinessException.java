@@ -5,6 +5,7 @@ import lombok.Getter;
 
 /**
  * 业务异常基类。封装 ErrorCode。
+ * 各模块继承此基类定义特定异常。
  */
 @Getter
 public class BusinessException extends RuntimeException {

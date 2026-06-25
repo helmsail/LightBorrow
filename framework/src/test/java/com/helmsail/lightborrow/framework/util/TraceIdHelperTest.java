@@ -1,6 +1,5 @@
 package com.helmsail.lightborrow.framework.util;
 
-import com.helmsail.lightborrow.framework.constant.HttpConstant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
@@ -10,50 +9,67 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TraceIdHelperTest {
 
     @AfterEach
-    void cleanUp() {
+    void tearDown() {
         MDC.clear();
     }
 
     @Test
-    void getCurrentTraceId_shouldReturnNullWhenNotSet() {
+    void shouldGenerateTraceIdWhenNotInMdc() {
+        String traceId = TraceIdHelper.getOrGenerateTraceId();
+        assertThat(traceId).isNotBlank();
+        assertThat(traceId).hasSize(32);
+        assertThat(MDC.get("traceId")).isEqualTo(traceId);
+    }
+
+    @Test
+    void shouldReturnExistingTraceIdFromMdc() {
+        MDC.put("traceId", "existing-id-12345");
+        assertThat(TraceIdHelper.getOrGenerateTraceId()).isEqualTo("existing-id-12345");
+    }
+
+    @Test
+    void shouldGetCurrentTraceId() {
+        MDC.put("traceId", "current-id");
+        assertThat(TraceIdHelper.getCurrentTraceId()).isEqualTo("current-id");
+    }
+
+    @Test
+    void shouldReturnNullWhenNoTraceId() {
         assertThat(TraceIdHelper.getCurrentTraceId()).isNull();
     }
 
     @Test
-    void setTraceId_shouldPutToMDC() {
-        TraceIdHelper.setTraceId("abc123");
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isEqualTo("abc123");
+    void shouldSetTraceId() {
+        TraceIdHelper.setTraceId("set-id");
+        assertThat(MDC.get("traceId")).isEqualTo("set-id");
     }
 
     @Test
-    void setTraceId_shouldIgnoreNullOrBlank() {
+    void shouldNotSetBlankTraceId() {
+        TraceIdHelper.setTraceId("");
+        assertThat(MDC.get("traceId")).isNull();
+    }
+
+    @Test
+    void shouldNotSetNullTraceId() {
         TraceIdHelper.setTraceId(null);
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
-
-        TraceIdHelper.setTraceId("  ");
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+        assertThat(MDC.get("traceId")).isNull();
     }
 
     @Test
-    void getCurrentTraceId_shouldReturnSetValue() {
-        TraceIdHelper.setTraceId("test-trace-id");
-        assertThat(TraceIdHelper.getCurrentTraceId()).isEqualTo("test-trace-id");
-    }
-
-    @Test
-    void clearTraceId_shouldRemoveFromMDC() {
-        TraceIdHelper.setTraceId("test");
+    void shouldClearTraceId() {
+        MDC.put("traceId", "to-clear");
         TraceIdHelper.clearTraceId();
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+        assertThat(MDC.get("traceId")).isNull();
     }
 
     @Test
-    void clearTraceId_shouldNotAffectOtherMDCKeys() {
-        MDC.put("other-key", "other-value");
-        TraceIdHelper.setTraceId("test");
-        TraceIdHelper.clearTraceId();
+    void shouldGenerate32CharUuid() {
+        assertThat(TraceIdHelper.generateTraceId()).hasSize(32);
+    }
 
-        assertThat(MDC.get("other-key")).isEqualTo("other-value");
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+    @Test
+    void shouldGenerateUniqueIds() {
+        assertThat(TraceIdHelper.generateTraceId()).isNotEqualTo(TraceIdHelper.generateTraceId());
     }
 }

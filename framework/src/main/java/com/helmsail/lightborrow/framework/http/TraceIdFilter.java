@@ -1,41 +1,47 @@
 package com.helmsail.lightborrow.framework.http;
 
 import com.helmsail.lightborrow.framework.constant.HttpConstant;
-import com.helmsail.lightborrow.framework.util.TraceIdHelper;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.core.Ordered;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
- * 入站 TraceId 处理。读取 X-Trace-Id 请求头或自动生成，响应头回写透传下游。
+ * TraceId 过滤器。为每个 HTTP 请求注入 traceId。
+ * 优先透传上游请求头中的 traceId，不存在则自动生成。
  */
-public class TraceIdFilter extends OncePerRequestFilter {
+@Slf4j
+public class TraceIdFilter implements Filter, Ordered {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
+                         FilterChain chain) throws IOException, ServletException {
+
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
         try {
-            // 从请求头获取 traceId，没有则生成
-            String traceId = request.getHeader(HttpConstant.X_TRACE_ID);
+            // 从请求头获取 traceId，不存在则生成
+            String traceId = request.getHeader(HttpConstant.HEADER_TRACE_ID);
             if (traceId == null || traceId.isBlank()) {
-                traceId = TraceIdHelper.generateTraceId();
+                traceId = UUID.randomUUID().toString().replace("-", "");
             }
-
-            // 写入 MDC
             MDC.put(HttpConstant.MDC_TRACE_ID, traceId);
-
-            // 响应头回写
-            response.setHeader(HttpConstant.X_TRACE_ID, traceId);
+            response.setHeader(HttpConstant.HEADER_TRACE_ID, traceId);
 
             chain.doFilter(request, response);
         } finally {
             MDC.remove(HttpConstant.MDC_TRACE_ID);
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 }

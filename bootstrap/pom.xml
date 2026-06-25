@@ -23,6 +23,18 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.helmsail</groupId>
+            <artifactId>lightborrow-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.helmsail</groupId>
+            <artifactId>lightborrow-gateway</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Web 能力（Framework 中为 optional，bootstrap 按需启用） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -35,10 +47,28 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- JDBC + Redis（框架及各模块的基础数据依赖） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 嵌入式数据库（测试环境） -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

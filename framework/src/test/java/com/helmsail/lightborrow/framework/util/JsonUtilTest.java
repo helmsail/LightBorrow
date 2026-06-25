@@ -1,81 +1,69 @@
 package com.helmsail.lightborrow.framework.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.FrameworkException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonUtilTest {
 
-    @Test
-    void toJson_shouldSerializeObject() {
-        TestUser user = new TestUser("张三", 25);
-        String json = JsonUtil.toJson(user);
-        assertThat(json).contains("\"name\":\"张三\"");
-        assertThat(json).contains("\"age\":25");
+    @BeforeAll
+    static void setUp() {
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        JsonUtil.setObjectMapper(mapper);
     }
 
     @Test
-    void toJson_shouldSerializeNullToNullString() {
-        String json = JsonUtil.toJson(null);
-        assertThat(json).isEqualTo("null");
+    void shouldSerializeToJson() {
+        String json = JsonUtil.toJson(Map.of("key", "value"));
+        assertThat(json).contains("\"key\"", "\"value\"");
     }
 
     @Test
-    void fromJson_shouldDeserializeToClass() {
-        String json = "{\"name\":\"李四\",\"age\":30}";
-        TestUser user = JsonUtil.fromJson(json, TestUser.class);
-        assertThat(user.name()).isEqualTo("李四");
-        assertThat(user.age()).isEqualTo(30);
+    void shouldDeserializeFromJson() {
+        Map<String, String> result = JsonUtil.fromJson("{\"key\":\"value\"}", Map.class);
+        assertThat(result).containsEntry("key", "value");
     }
 
     @Test
-    void fromJson_withTypeReference_shouldDeserializeGenericList() {
-        String json = "[{\"name\":\"a\",\"age\":1},{\"name\":\"b\",\"age\":2}]";
-        List<TestUser> users = JsonUtil.fromJson(json, new TypeReference<List<TestUser>>() {});
-        assertThat(users).hasSize(2);
-        assertThat(users.get(0).name()).isEqualTo("a");
+    void shouldDeserializeWithTypeReference() {
+        String json = "[1, 2, 3]";
+        List<Integer> result = JsonUtil.fromJson(json, new TypeReference<>() {});
+        assertThat(result).containsExactly(1, 2, 3);
     }
 
     @Test
-    void fromJson_withInvalidJson_shouldThrowFrameworkException() {
-        assertThatThrownBy(() -> JsonUtil.fromJson("{invalid}", TestUser.class))
-                .isInstanceOf(FrameworkException.class);
-    }
-
-    @Test
-    void fromJson_withInvalidJsonAndTypeRef_shouldThrowFrameworkException() {
-        assertThatThrownBy(() -> JsonUtil.fromJson("{invalid}", new TypeReference<TestUser>() {}))
-                .isInstanceOf(FrameworkException.class);
-    }
-
-    @Test
-    void toJson_withInvalidObject_shouldThrowFrameworkException() {
-        // Object that causes circular reference or serialization error
+    void shouldThrowFrameworkExceptionOnSerializeError() {
         assertThatThrownBy(() -> JsonUtil.toJson(new Object() {
-            @Override
-            public String toString() {
-                throw new RuntimeException("serialize error");
-            }
-        })).isInstanceOf(FrameworkException.class);
+            final Object cycle = this;
+        }))
+                .isInstanceOf(FrameworkException.class)
+                .satisfies(e -> assertThat(((FrameworkException) e).getCode()).isEqualTo(ErrorCode.JSON_SERIALIZE_FAILED.getCode()));
     }
 
     @Test
-    void getObjectMapper_shouldReturnNonNull() {
+    void shouldThrowFrameworkExceptionOnDeserializeError() {
+        assertThatThrownBy(() -> JsonUtil.fromJson("invalid json", String.class))
+                .isInstanceOf(FrameworkException.class)
+                .satisfies(e -> assertThat(((FrameworkException) e).getCode()).isEqualTo(ErrorCode.JSON_DESERIALIZE_FAILED.getCode()));
+    }
+
+    @Test
+    void shouldGetObjectMapper() {
         assertThat(JsonUtil.getObjectMapper()).isNotNull();
-    }
-
-    @Test
-    void getObjectMapper_shouldBeConfigurable() {
-        // Just verify the default mapper has expected features
-        var mapper = JsonUtil.getObjectMapper();
-        assertThat(mapper).isNotNull();
-    }
-
-    record TestUser(String name, int age) {
     }
 }

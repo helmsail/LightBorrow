@@ -14,7 +14,8 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 
 /**
- * Jackson 全局配置。使用 Jackson2ObjectMapperBuilderCustomizer 允许 {@code spring.jackson.*} 叠加。
+ * Jackson 全局自动配置。
+ * 使用 Jackson2ObjectMapperBuilderCustomizer 允许 {@code spring.jackson.*} 叠加。
  * 将 Spring 管理的 ObjectMapper 注入 {@link JsonUtil}。
  */
 @AutoConfiguration
@@ -36,9 +37,6 @@ public class JacksonConfig {
         return () -> JsonUtil.setObjectMapper(objectMapper);
     }
 
-    /**
-     * Spring Context 持有者。注册为 @Bean 确保通过 auto-configuration 加载。
-     */
     @Bean
     @ConditionalOnMissingBean
     public SpringContextHolder springContextHolder() {

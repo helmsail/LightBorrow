@@ -16,7 +16,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.util.Map;
 
 /**
- * Web 自动配置。
+ * Web 自动配置。注册 TraceId 过滤器、MDC 上下文传递装饰器。
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
@@ -58,14 +58,5 @@ public class WebConfig {
                 }
             };
         };
-    }
-
-    /**
-     * 全局异常处理器。
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public GlobalExceptionHandler globalExceptionHandler() {
-        return new GlobalExceptionHandler();
     }
 }

@@ -3,7 +3,7 @@ package com.helmsail.lightborrow.framework.exception;
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 
 /**
- * 框架层内部异常。继承 BusinessException 以便被统一异常处理器捕获。
+ * Framework 层异常。框架内部使用，如 JSON/Redis/锁等基础服务异常。
  */
 public class FrameworkException extends BusinessException {
 

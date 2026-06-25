@@ -10,7 +10,9 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.extern.slf4j.Slf4j;
 
-/** Jackson 封装。持有独立 ObjectMapper 兜底，Spring 启动后注入已配置的 ObjectMapper。 */
+/**
+ * Jackson JSON 工具封装。持有独立 ObjectMapper 兜底，Spring 启动后注入已配置的 ObjectMapper。
+ */
 @Slf4j
 public final class JsonUtil {
 
@@ -42,6 +44,7 @@ public final class JsonUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T fromJson(String json, TypeReference<T> typeRef) {
         try {
             return objectMapper.readValue(json, typeRef);

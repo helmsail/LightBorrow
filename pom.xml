@@ -17,7 +17,13 @@
 
 	<modules>
 		<module>framework</module>
+		<module>ai-infra</module>
 		<module>bootstrap</module>
+		<module>mcp</module>
+		<module>memory</module>
+		<module>rag</module>
+		<module>core</module>
+		<module>gateway</module>
 	</modules>
 
 	<properties>
@@ -25,6 +31,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<redisson.version>3.52.0</redisson.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
+		<bucket4j.version>8.16.1</bucket4j.version>
 	</properties>
 
 	<dependencyManagement>
@@ -38,6 +45,16 @@
 				<groupId>io.github.resilience4j</groupId>
 				<artifactId>resilience4j-spring-boot3</artifactId>
 				<version>${resilience4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.bucket4j</groupId>
+				<artifactId>bucket4j_jdk17-core</artifactId>
+				<version>${bucket4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.bucket4j</groupId>
+				<artifactId>bucket4j_jdk17-redisson</artifactId>
+				<version>${bucket4j.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

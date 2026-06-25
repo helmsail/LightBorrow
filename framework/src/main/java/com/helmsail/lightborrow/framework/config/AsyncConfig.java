@@ -10,7 +10,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 异步任务线程池自动配置。核心线程 2，最大 10，队列 200，拒绝策略为调用者执行。
+ * 异步任务线程池自动配置。
+ * 核心线程 2，最大 10，队列 200，拒绝策略为调用者执行。
  * 使用 MDC TaskDecorator 确保 @Async 中 traceId 传递。
  */
 @AutoConfiguration

@@ -1,6 +1,5 @@
 package com.helmsail.lightborrow.framework.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helmsail.lightborrow.framework.mq.RedisStreamPublisher;
 import com.helmsail.lightborrow.framework.redis.RedisService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -13,8 +12,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
- * Redis 自动配置。使用 GenericJackson2JsonRedisSerializer 写入 {@literal @class} 类型信息。
+ * Redis 自动配置。使用 GenericJackson2JsonRedisSerializer 写入 @class 类型信息。
  */
 @AutoConfiguration
 @ConditionalOnClass(RedisTemplate.class)
@@ -28,7 +29,6 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
-        // GenericJackson2JsonRedisSerializer 自动写入 @class 类型信息，反序列化时保持具体类型
         GenericJackson2JsonRedisSerializer jsonSerializer =
                 new GenericJackson2JsonRedisSerializer(objectMapper);
 

@@ -4,9 +4,15 @@ import lombok.Getter;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
- * 错误码枚举。
+ * 错误码枚举。码段分配：
+ *   framework:  400000-400999
+ *   ai-infra:   403000-403999
+ *   mcp:        404000-404999
+ *   rag:        405000-405999
+ *   memory:     406000-406999
+ *   core:       407000-407999
+ *   gateway:    408000-408999
  */
-
 @Getter
 public enum ErrorCode {
 
@@ -30,13 +36,37 @@ public enum ErrorCode {
     RESOURCE_ALREADY_EXISTS(400102, "资源已存在"),
     OPERATION_NOT_ALLOWED(400103, "操作不允许"),
 
-    // 各业务模块预留码段：
-    //   core:   401000-401999
-    //   gateway: 402000-402999
-    //   ai-infra: 403000-403999
-    //   mcp:     404000-404999
-    //   rag:     405000-405999
-    //   memory:  406000-406999
+    // === AI 基础设施 (403000-403999) ===
+    AI_API_CALL_FAILED(403000, "AI 服务调用失败"),
+    AI_RATE_LIMITED(403001, "AI 服务限流"),
+    AI_EMBEDDING_FAILED(403002, "向量化失败"),
+    AI_VECTOR_SEARCH_FAILED(403003, "向量检索失败"),
+    AI_VECTOR_STORE_FAILED(403004, "向量存储失败"),
+
+    // === MCP (404000-404999) ===
+    MCP_TOOL_NOT_FOUND(404000, "工具未找到"),
+    MCP_TOOL_EXECUTION_FAILED(404001, "工具执行失败"),
+    MCP_TOOL_INVALID_PARAMS(404002, "工具参数校验失败"),
+
+    // === RAG (405000-405999) ===
+    RAG_CHUNKING_FAILED(405000, "文档分块失败"),
+    RAG_LOAD_FAILED(405001, "文档加载失败"),
+    RAG_RETRIEVAL_FAILED(405002, "获取文档失败"),
+    RAG_GENERATION_FAILED(405003, "生成失败"),
+
+    // === Memory (406000-406999) ===
+    MEMORY_SESSION_FAILED(406000, "会话加载失败"),
+    MEMORY_HISTORY_FAILED(406001, "历史加载失败"),
+    MEMORY_PROFILE_FAILED(406002, "画像加载失败"),
+
+    // === Core (407000-407999) ===
+    CORE_REACT_MAX_STEPS(407000, "ReAct 循环达到最大步数"),
+    CORE_REWRITE_FAILED(407001, "输入重写失败"),
+
+    // === Gateway (408000-408999) ===
+    GATEWAY_RATE_LIMITED(408000, "请求过于频繁"),
+    GATEWAY_CHANNEL_ERROR(408001, "渠道适配失败"),
+    GATEWAY_MESSAGE_FORMAT_ERROR(408002, "消息格式错误"),
     ;
 
     private final int code;

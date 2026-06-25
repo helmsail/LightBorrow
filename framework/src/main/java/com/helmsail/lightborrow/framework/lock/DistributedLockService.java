@@ -1,81 +1,69 @@
 package com.helmsail.lightborrow.framework.lock;
 
-import com.helmsail.lightborrow.framework.constant.ErrorCode;
-import com.helmsail.lightborrow.framework.constant.RedisConstant;
-import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * 分布式锁服务。默认 leaseTime=-1ms 启用看门狗自动续期。
+ * 分布式锁服务。基于 Redisson，支持自动续期（看门狗）。
  */
 @Slf4j
 @RequiredArgsConstructor
 public class DistributedLockService {
 
+    private static final String LOCK_KEY_PREFIX = "lock:";
+    private static final long DEFAULT_WAIT_MILLIS = 5000;
+    /** -1 表示使用 Redisson 看门狗自动续期 */
+    private static final long DEFAULT_LEASE_MILLIS = -1;
+
     private final RedissonClient redissonClient;
 
-    public RLock getLock(String name) {
-        return redissonClient.getLock(buildLockKey(name));
+    /**
+     * 执行带锁的任务。
+     *
+     * @param key      锁的 key
+     * @param task     待执行任务
+     * @param <T>      返回值类型
+     * @return 任务执行结果
+     */
+    public <T> T executeWithLock(String key, Supplier<T> task) {
+        return executeWithLock(key, DEFAULT_WAIT_MILLIS, task);
     }
 
     /**
-     * @param leaseTime 锁持有时间（-1ms 启用看门狗自动续期）
+     * 执行带锁的任务。
+     *
+     * @param key       锁的 key
+     * @param waitMs    等待锁的超时时间（毫秒）
+     * @param task      待执行任务
+     * @param <T>       返回值类型
+     * @return 任务执行结果
      */
-    public <T> T executeWithLock(String name, Duration waitTime, Duration leaseTime,
-                                  Supplier<T> supplier) {
-        RLock lock = getLock(name);
-        boolean acquired = false;
+    public <T> T executeWithLock(String key, long waitMs, Supplier<T> task) {
+        RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + key);
+        boolean locked = false;
         try {
-            acquired = lock.tryLock(waitTime.toMillis(), leaseTime.toMillis(), TimeUnit.MILLISECONDS);
-            if (!acquired) {
-                throw new FrameworkException(ErrorCode.LOCK_ACQUISITION_TIMEOUT, name);
+            locked = lock.tryLock(waitMs, DEFAULT_LEASE_MILLIS, TimeUnit.MILLISECONDS);
+            if (!locked) {
+                log.warn("[分布式锁] 获取锁超时 key={}, waitMs={}", key, waitMs);
+                throw new RuntimeException("获取分布式锁超时: " + key);
             }
-            log.debug("[分布式锁] 获取成功 lock={}", name);
-            return supplier.get();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new FrameworkException(ErrorCode.LOCK_ACQUISITION_FAILED, e, name);
+            log.debug("[分布式锁] 获取成功 key={}", key);
+            return task.get();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[分布式锁] 执行异常 key={}", key, e);
+            throw new RuntimeException("分布式锁执行异常: " + key, e);
         } finally {
-            if (acquired && lock.isHeldByCurrentThread()) {
+            if (locked && lock.isHeldByCurrentThread()) {
                 lock.unlock();
-                log.debug("[分布式锁] 释放成功 lock={}", name);
+                log.debug("[分布式锁] 释放成功 key={}", key);
             }
         }
-    }
-
-    /** 无返回值重载 */
-    public void executeWithLock(String name, Duration waitTime, Duration leaseTime,
-                                 Runnable runnable) {
-        executeWithLock(name, waitTime, leaseTime, () -> {
-            runnable.run();
-            return null;
-        });
-    }
-
-    /** 默认配置（wait=5s, lease=-1ms 看门狗） */
-    public <T> T executeWithLock(String name, Supplier<T> supplier) {
-        return executeWithLock(name,
-                RedisConstant.LOCK_DEFAULT_WAIT,
-                RedisConstant.LOCK_DEFAULT_LEASE,
-                supplier);
-    }
-
-    /** 无返回值重载，使用默认配置 */
-    public void executeWithLock(String name, Runnable runnable) {
-        executeWithLock(name, () -> {
-            runnable.run();
-            return null;
-        });
-    }
-
-    private String buildLockKey(String name) {
-        return RedisConstant.LOCK_PREFIX + name;
     }
 }

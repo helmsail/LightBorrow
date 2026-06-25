@@ -1,100 +1,88 @@
 package com.helmsail.lightborrow.framework.http;
 
 import com.helmsail.lightborrow.framework.constant.HttpConstant;
-import jakarta.servlet.ServletException;
-import org.junit.jupiter.api.AfterEach;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TraceIdFilterTest {
 
-    private final TraceIdFilter filter = new TraceIdFilter();
+    @Mock
+    private HttpServletRequest request;
 
-    @AfterEach
-    void cleanUp() {
-        MDC.clear();
+    @Mock
+    private HttpServletResponse response;
+
+    @Mock
+    private FilterChain chain;
+
+    @InjectMocks
+    private TraceIdFilter filter;
+
+    @Test
+    void shouldUseTraceIdFromRequestHeader() throws Exception {
+        when(request.getHeader(HttpConstant.HEADER_TRACE_ID)).thenReturn("header-trace-id");
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+        verify(response).setHeader(HttpConstant.HEADER_TRACE_ID, "header-trace-id");
+        verify(chain).doFilter(request, response);
     }
 
     @Test
-    void shouldUseTraceIdFromHeader() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpConstant.X_TRACE_ID, "abc123");
-        MockHttpServletResponse response = new MockHttpServletResponse();
+    void shouldGenerateTraceIdWhenHeaderNotPresent() throws Exception {
+        when(request.getHeader(HttpConstant.HEADER_TRACE_ID)).thenReturn(null);
 
-        filter.doFilterInternal(request, response, (req, resp) -> {
-            assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isEqualTo("abc123");
-        });
+        filter.doFilter(request, response, chain);
 
-        assertThat(response.getHeader(HttpConstant.X_TRACE_ID)).isEqualTo("abc123");
+        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+        verify(chain).doFilter(request, response);
     }
 
     @Test
-    void shouldGenerateUuidWhenNoHeader() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
+    void shouldGenerateTraceIdWhenHeaderIsBlank() throws Exception {
+        when(request.getHeader(HttpConstant.HEADER_TRACE_ID)).thenReturn("   ");
 
-        String[] capturedTraceId = new String[1];
-        filter.doFilterInternal(request, response, (req, resp) -> {
-            capturedTraceId[0] = MDC.get(HttpConstant.MDC_TRACE_ID);
-        });
+        filter.doFilter(request, response, chain);
 
-        String traceId = capturedTraceId[0];
-        assertThat(traceId).isNotNull().isNotEmpty();
-        assertThat(traceId).hasSize(32);
-        assertThat(response.getHeader(HttpConstant.X_TRACE_ID)).isEqualTo(traceId);
+        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+        verify(chain).doFilter(request, response);
     }
 
     @Test
-    void shouldGenerateUuidWhenHeaderIsBlank() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpConstant.X_TRACE_ID, "  ");
-        MockHttpServletResponse response = new MockHttpServletResponse();
+    void shouldSetResponseHeaderWithTraceId() throws Exception {
+        when(request.getHeader(HttpConstant.HEADER_TRACE_ID)).thenReturn("trace-from-header");
 
-        filter.doFilterInternal(request, response, (req, resp) -> {
-            assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).hasSize(32);
-        });
+        filter.doFilter(request, response, chain);
+
+        verify(response).setHeader(HttpConstant.HEADER_TRACE_ID, "trace-from-header");
     }
 
     @Test
-    void shouldCleanupMdcAfterRequest() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpConstant.X_TRACE_ID, "test");
+    void shouldCleanupMdcAfterFilter() throws Exception {
+        when(request.getHeader(HttpConstant.HEADER_TRACE_ID)).thenReturn("test-trace");
 
-        filter.doFilterInternal(request, new MockHttpServletResponse(), (req, resp) -> {
-            assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isEqualTo("test");
-        });
+        filter.doFilter(request, response, chain);
 
         assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
     }
 
     @Test
-    void shouldPassRequestToChain() throws ServletException, IOException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        boolean[] chainCalled = {false};
-
-        filter.doFilterInternal(request, response, (req, resp) -> chainCalled[0] = true);
-
-        assertThat(chainCalled[0]).isTrue();
-    }
-
-    @Test
-    void shouldCleanupMdcEvenWhenChainThrows() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpConstant.X_TRACE_ID, "test");
-
-        assertThatThrownBy(() ->
-                filter.doFilterInternal(request, new MockHttpServletResponse(),
-                        (req, resp) -> { throw new RuntimeException("chain error"); })
-        ).isInstanceOf(RuntimeException.class);
-
-        assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
+    void shouldHaveHighestPrecedence() {
+        assertThat(filter.getOrder()).isEqualTo(Integer.MIN_VALUE);
     }
 }

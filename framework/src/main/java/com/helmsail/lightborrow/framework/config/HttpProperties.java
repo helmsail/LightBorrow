@@ -6,6 +6,9 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
 
+/**
+ * HTTP 客户端配置属性。
+ */
 @Validated
 @Data
 @ConfigurationProperties(prefix = "lightborrow.http")

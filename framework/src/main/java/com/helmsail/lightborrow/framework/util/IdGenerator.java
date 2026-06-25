@@ -5,7 +5,9 @@ import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 雪花算法。64bit: 符号位1 + 时间戳41 + workerId10 + 序列号12。时钟回拨容忍5ms，超过抛异常。
+ * 雪花算法 ID 生成器。
+ * 64bit: 符号位1 + 时间戳41 + workerId10 + 序列号12。
+ * 时钟回拨容忍 5ms，超过则抛异常。
  */
 @Slf4j
 public class IdGenerator {
@@ -50,7 +52,6 @@ public class IdGenerator {
         if (currentTimestamp < lastTimestamp) {
             long offset = lastTimestamp - currentTimestamp;
             if (offset <= MAX_CLOCK_BACKWARD_MILLIS) {
-                // 等待到上次时间戳
                 currentTimestamp = waitUntil(lastTimestamp);
             } else {
                 throw new FrameworkException(ErrorCode.ID_GENERATION_FAILED,
@@ -61,7 +62,6 @@ public class IdGenerator {
         if (currentTimestamp == lastTimestamp) {
             sequence = (sequence + 1) & MAX_SEQUENCE;
             if (sequence == 0) {
-                // 同一毫秒内序列号耗尽，等待下一毫秒
                 currentTimestamp = waitUntil(lastTimestamp + 1);
             }
         } else {
@@ -79,9 +79,9 @@ public class IdGenerator {
     public static IdComponents parseId(long id) {
         long diff = id >>> TIMESTAMP_SHIFT;
         long timestamp = diff + EPOCH;
-        long workerId = (id >>> WORKER_ID_SHIFT) & ~(-1L << WORKER_ID_BITS);
-        long sequence = id & ~(-1L << SEQUENCE_BITS);
-        return new IdComponents(timestamp, workerId, sequence);
+        long wid = (id >>> WORKER_ID_SHIFT) & ~(-1L << WORKER_ID_BITS);
+        long seq = id & ~(-1L << SEQUENCE_BITS);
+        return new IdComponents(timestamp, wid, seq);
     }
 
     private long timestamp() {
