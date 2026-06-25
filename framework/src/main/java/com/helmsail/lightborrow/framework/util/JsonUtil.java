@@ -10,9 +10,7 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Jackson 封装。默认持有独立 ObjectMapper 兜底，Spring 启动后注入已配置的 ObjectMapper。
- */
+/** Jackson 封装。持有独立 ObjectMapper 兜底，Spring 启动后注入已配置的 ObjectMapper。 */
 @Slf4j
 public final class JsonUtil {
 
@@ -21,7 +19,7 @@ public final class JsonUtil {
     private JsonUtil() {
     }
 
-    /** 注入 Spring 管理的 ObjectMapper，与 spring.jackson.* 配置保持一致 */
+    /** 注入 Spring 管理的 ObjectMapper */
     public static void setObjectMapper(ObjectMapper mapper) {
         objectMapper = mapper;
     }

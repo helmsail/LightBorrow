@@ -15,7 +15,7 @@ public final class HttpConstant {
     // ========== MDC Key ==========
     public static final String MDC_TRACE_ID = "traceId";
 
-    // ========== 默认超时 ==========
-    public static final int DEFAULT_CONNECT_TIMEOUT = 5000;
-    public static final int DEFAULT_READ_TIMEOUT = 10000;
+    // ========== 慢调用阈值 ==========
+    /** 慢调用阈值（毫秒），超过此值日志输出 warn */
+    public static final int SLOW_THRESHOLD_MILLIS = 5000;
 }

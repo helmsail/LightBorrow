@@ -1,6 +1,7 @@
 package com.helmsail.lightborrow.framework.http;
 
 import com.helmsail.lightborrow.framework.constant.HttpConstant;
+import com.helmsail.lightborrow.framework.util.TraceIdHelper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,11 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.UUID;
 
 /**
- * 入站 traceId 处理。读取上游 X-Trace-Id 或生成 UUID，写入 MDC 使同一请求日志可关联；
- * 响应头回写透传下游。请求结束清理防止线程池复用污染。
+ * 入站 TraceId 处理。读取 X-Trace-Id 请求头或自动生成，响应头回写透传下游。
  */
 public class TraceIdFilter extends OncePerRequestFilter {
 
@@ -25,7 +24,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
             // 从请求头获取 traceId，没有则生成
             String traceId = request.getHeader(HttpConstant.X_TRACE_ID);
             if (traceId == null || traceId.isBlank()) {
-                traceId = UUID.randomUUID().toString().replace("-", "");
+                traceId = TraceIdHelper.generateTraceId();
             }
 
             // 写入 MDC

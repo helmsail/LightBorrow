@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * 日期工具类。基于 Java 8 Time API。
@@ -19,6 +21,9 @@ public final class DateUtil {
     private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern(DEFAULT_PATTERN);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_PATTERN);
+
+    /** 缓存用户自定义 pattern 的 DateTimeFormatter，避免频繁创建 */
+    private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>(8);
 
     private DateUtil() {
     }
@@ -100,6 +105,6 @@ public final class DateUtil {
         if (TIME_PATTERN.equals(pattern)) {
             return TIME_FORMATTER;
         }
-        return DateTimeFormatter.ofPattern(pattern);
+        return FORMATTER_CACHE.computeIfAbsent(pattern, DateTimeFormatter::ofPattern);
     }
 }

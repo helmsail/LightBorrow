@@ -14,11 +14,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * Redis 自动配置。使用 GenericJackson2JsonRedisSerializer 写入 {@literal @class} 类型信息，
- * 避免 Jackson2JsonRedisSerializer 的 LinkedHashMap 类型丢失问题。
+ * Redis 自动配置。使用 GenericJackson2JsonRedisSerializer 写入 {@literal @class} 类型信息。
  */
 @AutoConfiguration
-@ConditionalOnClass({RedisTemplate.class, ObjectMapper.class})
+@ConditionalOnClass(RedisTemplate.class)
 public class RedisConfig {
 
     @Bean

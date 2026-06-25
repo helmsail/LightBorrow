@@ -11,11 +11,9 @@ import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 import java.net.http.HttpClient;
-import java.time.Duration;
 
 /**
- * RestClient 自动配置。使用 JdkClientHttpRequestFactory（Java 11+ 内置 HttpClient），
- * 无需引入 Apache HttpClient 或 OkHttp。注册 TraceId 透传和日志拦截器。
+ * RestClient 自动配置。使用 JDK HttpClient，无需引入 Apache HttpClient 或 OkHttp。
  */
 @AutoConfiguration
 @ConditionalOnClass(RestClient.class)
@@ -29,7 +27,7 @@ public class RestClientConfig {
             TraceIdClientHttpRequestInterceptor traceIdInterceptor,
             LoggingClientHttpRequestInterceptor loggingInterceptor) {
         HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofMillis(httpProperties.getConnectTimeout()))
+                .connectTimeout(httpProperties.getConnectTimeout())
                 .build();
         JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
         factory.setReadTimeout(httpProperties.getReadTimeout());

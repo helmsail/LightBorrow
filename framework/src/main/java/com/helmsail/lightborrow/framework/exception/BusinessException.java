@@ -4,14 +4,16 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import lombok.Getter;
 
 /**
- * 业务异常基类。封装 ErrorCode，避免 magic number。
+ * 业务异常基类。封装 ErrorCode。
  */
 @Getter
 public class BusinessException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     private final int code;
 
-    /** 快捷构造，默认 BIZ_ERROR(400100) 错误码 */
+    /** 快捷构造，默认 BIZ_ERROR */
     public BusinessException(String message) {
         super(message);
         this.code = ErrorCode.BIZ_ERROR.getCode();

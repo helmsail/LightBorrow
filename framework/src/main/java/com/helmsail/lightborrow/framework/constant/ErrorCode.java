@@ -1,15 +1,16 @@
 package com.helmsail.lightborrow.framework.constant;
 
 import lombok.Getter;
+import org.slf4j.helpers.MessageFormatter;
 
 /**
- * 错误码枚举。按模块预留码段 400000-405999, 500000 系统级。
+ * 错误码枚举。
  */
 
 @Getter
 public enum ErrorCode {
 
-    // === 系统级 ===
+    // === 系统级 (500xxx) ===
     SYSTEM_ERROR(500000, "系统内部错误"),
 
     // === Framework 层 (400000-400999) ===
@@ -23,11 +24,20 @@ public enum ErrorCode {
     ID_GENERATION_FAILED(400007, "ID 生成失败"),
     INVALID_PARAMETER(400008, "参数校验失败"),
 
-    // === 业务通用 ===
+    // === 业务通用 (400100-400999) ===
     BIZ_ERROR(400100, "业务处理失败"),
     RESOURCE_NOT_FOUND(400101, "资源不存在"),
     RESOURCE_ALREADY_EXISTS(400102, "资源已存在"),
-    OPERATION_NOT_ALLOWED(400103, "操作不允许");
+    OPERATION_NOT_ALLOWED(400103, "操作不允许"),
+
+    // 各业务模块预留码段：
+    //   core:   401000-401999
+    //   gateway: 402000-402999
+    //   ai-infra: 403000-403999
+    //   mcp:     404000-404999
+    //   rag:     405000-405999
+    //   memory:  406000-406999
+    ;
 
     private final int code;
     private final String message;
@@ -37,10 +47,13 @@ public enum ErrorCode {
         this.message = message;
     }
 
+    /**
+     * 获取格式化后的错误消息。使用 SLF4J MessageFormatter，{} 占位符，缺少参数时不抛异常。
+     */
     public String getMessage(Object... args) {
         if (args == null || args.length == 0) {
             return message;
         }
-        return String.format(message, args);
+        return MessageFormatter.arrayFormat(message, args).getMessage();
     }
 }

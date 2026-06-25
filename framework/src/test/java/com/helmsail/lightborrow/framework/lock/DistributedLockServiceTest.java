@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,7 +29,6 @@ class DistributedLockServiceTest {
     @InjectMocks
     private DistributedLockService lockService;
 
-    /** tryLock mock - suppressed checked exception since it's a mock */
     private void mockTryLock(boolean result) {
         try { doReturn(result).when(rLock).tryLock(anyLong(), anyLong(), any(TimeUnit.class)); }
         catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
@@ -55,7 +55,7 @@ class DistributedLockServiceTest {
         mockTryLock(true);
         mockIsHeldByCurrentThread();
 
-        String result = lockService.executeWithLock("order", 1000, -1, TimeUnit.MILLISECONDS, () -> "done");
+        String result = lockService.executeWithLock("order", Duration.ofMillis(1000), Duration.ofMillis(-1), () -> "done");
 
         assertThat(result).isEqualTo("done");
         verify(rLock).unlock();
@@ -67,7 +67,7 @@ class DistributedLockServiceTest {
         mockTryLock(false);
 
         assertThatThrownBy(() ->
-                lockService.executeWithLock("order", 1000, -1, TimeUnit.MILLISECONDS, () -> "done"))
+                lockService.executeWithLock("order", Duration.ofMillis(1000), Duration.ofMillis(-1), () -> "done"))
                 .isInstanceOf(FrameworkException.class)
                 .hasMessageContaining("获取分布式锁超时");
 
@@ -80,7 +80,7 @@ class DistributedLockServiceTest {
         mockTryLockThrows(new InterruptedException("interrupted"));
 
         assertThatThrownBy(() ->
-                lockService.executeWithLock("order", 1000, -1, TimeUnit.MILLISECONDS, () -> "done"))
+                lockService.executeWithLock("order", Duration.ofMillis(1000), Duration.ofMillis(-1), () -> "done"))
                 .isInstanceOf(FrameworkException.class)
                 .hasMessageContaining("获取分布式锁失败");
 
@@ -95,7 +95,7 @@ class DistributedLockServiceTest {
         mockIsHeldByCurrentThread();
 
         AtomicBoolean executed = new AtomicBoolean(false);
-        lockService.executeWithLock("order", 1000, -1, TimeUnit.MILLISECONDS, () -> executed.set(true));
+        lockService.executeWithLock("order", Duration.ofMillis(1000), Duration.ofMillis(-1), () -> executed.set(true));
 
         assertThat(executed).isTrue();
         verify(rLock).unlock();
@@ -110,12 +110,12 @@ class DistributedLockServiceTest {
         String result = lockService.executeWithLock("order", () -> "done");
 
         assertThat(result).isEqualTo("done");
-        verifyTryLock(5000, -1L);
+        verifyTryLock(Duration.ofSeconds(5), Duration.ofMillis(-1));
         verify(rLock).unlock();
     }
 
-    private void verifyTryLock(long waitTime, long leaseTime) {
-        try { verify(rLock).tryLock(waitTime, leaseTime, TimeUnit.MILLISECONDS); }
+    private void verifyTryLock(Duration waitTime, Duration leaseTime) {
+        try { verify(rLock).tryLock(waitTime.toMillis(), leaseTime.toMillis(), TimeUnit.MILLISECONDS); }
         catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
     }
 
@@ -139,7 +139,7 @@ class DistributedLockServiceTest {
         mockIsHeldByCurrentThread();
 
         assertThatThrownBy(() ->
-                lockService.executeWithLock("order", 1000, -1, TimeUnit.MILLISECONDS, () -> {
+                lockService.executeWithLock("order", Duration.ofMillis(1000), Duration.ofMillis(-1), () -> {
                     throw new RuntimeException("business error");
                 }))
                 .isInstanceOf(RuntimeException.class);

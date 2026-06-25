@@ -1,5 +1,6 @@
 package com.helmsail.lightborrow.framework.http;
 
+import com.helmsail.lightborrow.framework.constant.HttpConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -8,26 +9,35 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
- * HTTP 日志拦截器。Debug 输出完整请求体（含 Headers），Warn 标记异常响应或慢调用（>5s）。
+ * HTTP 请求/响应日志拦截器。INFO 输出请求概要，DEBUG 输出完整体（敏感 Header 脱敏），
+ * WARN 标记 4xx/5xx 或慢调用，ERROR 标记调用失败。
  */
 @Slf4j
 public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    private static final Set<String> SENSITIVE_HEADERS = Set.of(
+            "authorization", "cookie", "set-cookie",
+            "x-auth-token", "x-api-key", "x-access-key"
+    );
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body,
                                         ClientHttpRequestExecution execution) throws IOException {
         long start = System.currentTimeMillis();
 
+        // === 请求日志 ===
+        log.info("[HTTP] >>> {} {}", request.getMethod(), request.getURI());
+
         if (log.isDebugEnabled()) {
-            log.debug("[HTTP] >>> {} {} | headers={} | body={}",
-                    request.getMethod(), request.getURI(),
+            log.debug("[HTTP] >>> headers={} | body={}",
                     sanitizeHeaders(request), new String(body, StandardCharsets.UTF_8));
-        } else {
-            log.info("[HTTP] >>> {} {}", request.getMethod(), request.getURI());
         }
 
+        // === 执行 ===
         ClientHttpResponse response;
         try {
             response = execution.execute(request, body);
@@ -38,15 +48,16 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
             throw e;
         }
 
+        // === 响应日志 ===
         long duration = System.currentTimeMillis() - start;
         int statusCode = response.getStatusCode().value();
 
-        if (statusCode >= 400 || duration > 5000) {
+        if (statusCode >= 400 || duration > HttpConstant.SLOW_THRESHOLD_MILLIS) {
             log.warn("[HTTP] {} {} 响应异常, status={}, 耗时={}ms",
                     request.getMethod(), request.getURI(),
                     statusCode, duration);
         } else {
-            log.debug("[HTTP] {} {} 响应成功, status={}, 耗时={}ms",
+            log.info("[HTTP] {} {} 响应成功, status={}, 耗时={}ms",
                     request.getMethod(), request.getURI(),
                     statusCode, duration);
         }
@@ -54,13 +65,10 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
         return response;
     }
 
+    /** 脱敏敏感 Header */
     private String sanitizeHeaders(HttpRequest request) {
-        var headers = request.getHeaders();
-        var sanitized = new java.util.HashMap<>(headers);
-        sanitized.keySet().removeIf(k ->
-                k.equalsIgnoreCase("Authorization")
-                        || k.equalsIgnoreCase("Cookie")
-                        || k.equalsIgnoreCase("Set-Cookie"));
-        return sanitized.toString();
+        var headers = new HashMap<>(request.getHeaders());
+        headers.keySet().removeIf(k -> SENSITIVE_HEADERS.contains(k.toLowerCase()));
+        return headers.toString();
     }
 }

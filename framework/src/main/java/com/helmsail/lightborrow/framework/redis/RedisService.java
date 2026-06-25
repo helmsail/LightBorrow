@@ -2,6 +2,7 @@ package com.helmsail.lightborrow.framework.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.time.Duration;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Redis 操作服务。轻量封装 StringRedisTemplate。Stream 操作使用原生 API。
+ * Redis 操作服务。轻量封装 StringRedisTemplate。
  */
 @RequiredArgsConstructor
 public class RedisService {
@@ -62,7 +63,6 @@ public class RedisService {
         return redisTemplate.opsForHash().entries(key);
     }
 
-    @SuppressWarnings({"unchecked", "varargs"})
     public Long hDelete(String key, String... fields) {
         return redisTemplate.opsForHash().delete(key, (Object[]) fields);
     }
@@ -135,7 +135,6 @@ public class RedisService {
         return redisTemplate.opsForSet().add(key, values);
     }
 
-    @SuppressWarnings("varargs")
     public Long sRemove(String key, String... values) {
         return redisTemplate.opsForSet().remove(key, (Object[]) values);
     }
@@ -150,5 +149,62 @@ public class RedisService {
 
     public Long sSize(String key) {
         return redisTemplate.opsForSet().size(key);
+    }
+
+    // ========== ZSet（有序集合）==========
+
+    /**
+     * 添加元素到 ZSet，指定分数
+     */
+    public Boolean zAdd(String key, String value, double score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    /**
+     * 批量添加元素到 ZSet
+     */
+    public Long zAdd(String key, Set<ZSetOperations.TypedTuple<String>> tuples) {
+        return redisTemplate.opsForZSet().add(key, tuples);
+    }
+
+    public Long zRemove(String key, String... values) {
+        return redisTemplate.opsForZSet().remove(key, (Object[]) values);
+    }
+
+    public Double zScore(String key, String value) {
+        return redisTemplate.opsForZSet().score(key, value);
+    }
+
+    public Long zCard(String key) {
+        return redisTemplate.opsForZSet().zCard(key);
+    }
+
+    public Set<String> zRangeByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
+    public Set<String> zRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().range(key, start, end);
+    }
+
+    public Set<String> zReverseRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().reverseRange(key, start, end);
+    }
+
+    public Long zRemoveRangeByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
+    }
+
+    public Double zIncrementScore(String key, String value, double delta) {
+        return redisTemplate.opsForZSet().incrementScore(key, value, delta);
+    }
+
+    // ========== 特殊操作 ==========
+
+    /**
+     * 仅当 key 不存在时设置值（SET NX）
+     */
+    public Boolean setIfAbsent(String key, String value, Duration timeout) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout);
     }
 }

@@ -23,7 +23,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.StringJoiner;
 
 /**
- * 全局异常处理器。统一返回 {@link Result} 格式，避免 Spring 默认 Whitelabel Error。
+ * 全局异常处理器。统一返回 {@link Result} 格式。
  */
 @Slf4j
 @RestControllerAdvice
@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
         return Result.error(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), "不支持的 Content-Type: " + e.getContentType());
     }
 
-    /** 兜底：打印完整堆栈以便排查非预期异常 */
+    /** 兜底：打印完整堆栈 */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleUnknown(Exception e) {
         log.error("[系统异常] 未捕获异常", e);

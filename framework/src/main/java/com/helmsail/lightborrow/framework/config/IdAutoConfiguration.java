@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * ID 生成器自动配置。雪花算法不依赖外部中间件。
+ * ID 生成器自动配置。
  */
 @AutoConfiguration
 @EnableConfigurationProperties(IdProperties.class)

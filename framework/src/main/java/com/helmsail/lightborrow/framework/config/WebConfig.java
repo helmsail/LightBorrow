@@ -16,7 +16,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.util.Map;
 
 /**
- * Web 自动配置。注册 TraceIdFilter + MDC TaskDecorator 解决异步线程 traceId 传递问题。
+ * Web 自动配置。
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
@@ -29,14 +29,13 @@ public class WebConfig {
         registration.setFilter(new TraceIdFilter());
         registration.addUrlPatterns("/*");
         registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC);
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         registration.setName("traceIdFilter");
         return registration;
     }
 
     /**
-     * MDC 上下文传递装饰器。@Async / 线程池默认不继承父线程 MDC，
-     * 此装饰器解决异步任务中 traceId 丢失的问题。
+     * MDC 上下文传递装饰器。解决 @Async / 线程池不继承父线程 MDC 的问题。
      */
     @Bean
     @ConditionalOnMissingBean
@@ -59,5 +58,14 @@ public class WebConfig {
                 }
             };
         };
+    }
+
+    /**
+     * 全局异常处理器。
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public GlobalExceptionHandler globalExceptionHandler() {
+        return new GlobalExceptionHandler();
     }
 }

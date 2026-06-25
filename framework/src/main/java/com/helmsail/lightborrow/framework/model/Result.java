@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 统一 API 返回体 {code, msg, data}，国内企业开发事实标准。
+ * 统一 API 返回体 {code, msg, data}。
  */
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -30,6 +30,10 @@ public class Result<T> implements Serializable {
     private String msg;
     /** 返回数据 */
     private T data;
+
+    public boolean isSuccess() {
+        return code == SUCCESS_CODE;
+    }
 
     // ========== 成功 ==========
 

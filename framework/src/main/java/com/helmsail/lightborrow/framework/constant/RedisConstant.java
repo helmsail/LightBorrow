@@ -15,8 +15,8 @@ public final class RedisConstant {
     public static final String LOCK_PREFIX = "lock:";
 
     // ========== 分布式锁默认配置 ==========
-    /** 锁默认持有时间（-1 启用 Redisson 看门狗自动续期） */
-    public static final long LOCK_DEFAULT_LEASE = -1L;
+    /** 锁默认持有时间（-1ms 启用 Redisson 看门狗自动续期） */
+    public static final Duration LOCK_DEFAULT_LEASE = Duration.ofMillis(-1);
     /** 锁默认等待时间：5 秒 */
     public static final Duration LOCK_DEFAULT_WAIT = Duration.ofSeconds(5);
 }

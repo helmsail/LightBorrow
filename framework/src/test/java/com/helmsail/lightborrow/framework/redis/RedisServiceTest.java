@@ -32,6 +32,8 @@ class RedisServiceTest {
     private ListOperations<String, String> listOps;
     @Mock
     private SetOperations<String, String> setOps;
+    @Mock
+    private ZSetOperations<String, String> zSetOps;
 
     private RedisService redisService;
 
@@ -44,6 +46,7 @@ class RedisServiceTest {
         lenient().when(redisTemplate.opsForHash()).thenReturn(hashOps);
         lenient().when(redisTemplate.opsForList()).thenReturn(listOps);
         lenient().when(redisTemplate.opsForSet()).thenReturn(setOps);
+        lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOps);
         redisService = new RedisService(redisTemplate);
     }
 
@@ -269,5 +272,74 @@ class RedisServiceTest {
     void sSize_shouldReturnSize() {
         when(setOps.size("k")).thenReturn(3L);
         assertThat(redisService.sSize("k")).isEqualTo(3L);
+    }
+
+    // ========== ZSet ==========
+
+    @Test
+    void zAdd_shouldDelegate() {
+        when(zSetOps.add("k", "v", 1.0)).thenReturn(true);
+        assertThat(redisService.zAdd("k", "v", 1.0)).isTrue();
+    }
+
+    @Test
+    void zAddBatch_shouldDelegate() {
+        Set<ZSetOperations.TypedTuple<String>> tuples = Set.of(
+                ZSetOperations.TypedTuple.of("a", 1.0),
+                ZSetOperations.TypedTuple.of("b", 2.0)
+        );
+        when(zSetOps.add("k", tuples)).thenReturn(2L);
+        assertThat(redisService.zAdd("k", tuples)).isEqualTo(2L);
+    }
+
+    @Test
+    void zRemove_shouldDelegate() {
+        when(zSetOps.remove("k", (Object) "a", "b")).thenReturn(2L);
+        assertThat(redisService.zRemove("k", "a", "b")).isEqualTo(2L);
+    }
+
+    @Test
+    void zScore_shouldReturnScore() {
+        when(zSetOps.score("k", "v")).thenReturn(3.5);
+        assertThat(redisService.zScore("k", "v")).isEqualTo(3.5);
+    }
+
+    @Test
+    void zCard_shouldReturnCount() {
+        when(zSetOps.zCard("k")).thenReturn(5L);
+        assertThat(redisService.zCard("k")).isEqualTo(5L);
+    }
+
+    @Test
+    void zRangeByScore_shouldReturnSet() {
+        when(zSetOps.rangeByScore("k", 0, 100)).thenReturn(Set.of("a", "b"));
+        assertThat(redisService.zRangeByScore("k", 0, 100)).containsExactlyInAnyOrder("a", "b");
+    }
+
+    @Test
+    void zRange_shouldReturnSet() {
+        when(zSetOps.range("k", 0, -1)).thenReturn(Set.of("a", "b"));
+        assertThat(redisService.zRange("k", 0, -1)).containsExactlyInAnyOrder("a", "b");
+    }
+
+    @Test
+    void zReverseRange_shouldReturnSet() {
+        when(zSetOps.reverseRange("k", 0, -1)).thenReturn(Set.of("b", "a"));
+        assertThat(redisService.zReverseRange("k", 0, -1)).containsExactlyInAnyOrder("b", "a");
+    }
+
+    @Test
+    void zIncrementScore_shouldReturnNewScore() {
+        when(zSetOps.incrementScore("k", "v", 2.0)).thenReturn(5.0);
+        assertThat(redisService.zIncrementScore("k", "v", 2.0)).isEqualTo(5.0);
+    }
+
+    // ========== 特殊操作 ==========
+
+    @Test
+    void setIfAbsent_shouldDelegate() {
+        Duration timeout = Duration.ofSeconds(30);
+        when(valueOps.setIfAbsent("k", "v", timeout)).thenReturn(true);
+        assertThat(redisService.setIfAbsent("k", "v", timeout)).isTrue();
     }
 }

@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: lightborrow
+
+  # 优雅关闭（收到 SIGTERM 后不再接受新请求，等待处理中的请求完成）
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: 8080
+  shutdown: graceful
+
+# 日志
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{traceId}] - %msg%n'
+  level:
+    root: info
+    com.helmsail: info
+
+# Actuator / 健康检查
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true  # 启用 K8s 就绪/存活探针
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: @project.version@

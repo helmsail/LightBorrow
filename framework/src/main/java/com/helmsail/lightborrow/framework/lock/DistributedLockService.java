@@ -8,11 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * 分布式锁服务。默认 leaseTime=-1 启用看门狗自动续期。
+ * 分布式锁服务。默认 leaseTime=-1ms 启用看门狗自动续期。
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -25,14 +26,14 @@ public class DistributedLockService {
     }
 
     /**
-     * @param leaseTime 锁持有时间（-1 启用看门狗自动续期）
+     * @param leaseTime 锁持有时间（-1ms 启用看门狗自动续期）
      */
-    public <T> T executeWithLock(String name, long waitTime, long leaseTime,
-                                  TimeUnit unit, Supplier<T> supplier) {
+    public <T> T executeWithLock(String name, Duration waitTime, Duration leaseTime,
+                                  Supplier<T> supplier) {
         RLock lock = getLock(name);
         boolean acquired = false;
         try {
-            acquired = lock.tryLock(waitTime, leaseTime, unit);
+            acquired = lock.tryLock(waitTime.toMillis(), leaseTime.toMillis(), TimeUnit.MILLISECONDS);
             if (!acquired) {
                 throw new FrameworkException(ErrorCode.LOCK_ACQUISITION_TIMEOUT, name);
             }
@@ -50,20 +51,20 @@ public class DistributedLockService {
     }
 
     /** 无返回值重载 */
-    public void executeWithLock(String name, long waitTime, long leaseTime,
-                                 TimeUnit unit, Runnable runnable) {
-        executeWithLock(name, waitTime, leaseTime, unit, () -> {
+    public void executeWithLock(String name, Duration waitTime, Duration leaseTime,
+                                 Runnable runnable) {
+        executeWithLock(name, waitTime, leaseTime, () -> {
             runnable.run();
             return null;
         });
     }
 
-    /** 使用默认配置（wait=5s, lease=-1 看门狗） */
+    /** 默认配置（wait=5s, lease=-1ms 看门狗） */
     public <T> T executeWithLock(String name, Supplier<T> supplier) {
         return executeWithLock(name,
-                RedisConstant.LOCK_DEFAULT_WAIT.toMillis(),
+                RedisConstant.LOCK_DEFAULT_WAIT,
                 RedisConstant.LOCK_DEFAULT_LEASE,
-                TimeUnit.MILLISECONDS, supplier);
+                supplier);
     }
 
     /** 无返回值重载，使用默认配置 */

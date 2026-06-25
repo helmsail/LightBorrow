@@ -5,16 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.helmsail.lightborrow.framework.util.JsonUtil;
+import com.helmsail.lightborrow.framework.util.SpringContextHolder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 
 /**
- * Jackson 全局配置。通过 {@link Jackson2ObjectMapperBuilderCustomizer} 而非直接声明 ObjectMapper Bean，
- * 允许消费者通过 {@code spring.jackson.*} 叠加自定义配置。
- * 将 Spring 管理的 ObjectMapper 注入 {@link JsonUtil}，使静态工具类与 Spring 配置一致。
+ * Jackson 全局配置。使用 Jackson2ObjectMapperBuilderCustomizer 允许 {@code spring.jackson.*} 叠加。
+ * 将 Spring 管理的 ObjectMapper 注入 {@link JsonUtil}。
  */
 @AutoConfiguration
 @ConditionalOnClass(ObjectMapper.class)
@@ -33,5 +34,14 @@ public class JacksonConfig {
     @Bean
     public InitializingBean jsonUtilObjectMapperSyncer(ObjectMapper objectMapper) {
         return () -> JsonUtil.setObjectMapper(objectMapper);
+    }
+
+    /**
+     * Spring Context 持有者。注册为 @Bean 确保通过 auto-configuration 加载。
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public SpringContextHolder springContextHolder() {
+        return new SpringContextHolder();
     }
 }

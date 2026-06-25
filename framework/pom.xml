@@ -78,11 +78,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Bean Validation -->
+        <!-- Bean Validation (框架代码直接 import jakarta.validation.*，必须强制依赖) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Lombok -->
