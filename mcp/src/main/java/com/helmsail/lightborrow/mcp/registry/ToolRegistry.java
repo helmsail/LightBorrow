@@ -8,6 +8,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
@@ -22,14 +24,18 @@ public class ToolRegistry {
 
     private final Map<String, ToolDefinition> tools = new ConcurrentHashMap<>();
     private final ApplicationContext applicationContext;
+    private volatile boolean scanned = false;
 
     public ToolRegistry(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    @PostConstruct
-    public void init() {
-        scanTools();
+    @EventListener
+    public void onContextRefreshed(ContextRefreshedEvent event) {
+        if (!scanned) {
+            scanTools();
+            scanned = true;
+        }
     }
 
     private void scanTools() {

@@ -71,6 +71,15 @@ public class AssetTool {
         String assetCode = (String) args.get("assetCode");
         String reason = (String) args.get("reason");
         String expectedReturnAt = (String) args.get("expectedReturnAt");
+        if (assetCode == null || assetCode.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：资产编码(assetCode)不能为空");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：借用原因(reason)不能为空");
+        }
+        if (expectedReturnAt == null || expectedReturnAt.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：预计归还时间(expectedReturnAt)不能为空");
+        }
         assetService.submitBorrow(userId, assetCode, reason, expectedReturnAt);
         return "借用申请已提交，资产编码: " + assetCode;
     }
@@ -86,6 +95,12 @@ public class AssetTool {
         String fromUserId = (String) args.getOrDefault("userId", "");
         String borrowId = (String) args.get("borrowId");
         String toUserId = (String) args.get("toUserId");
+        if (borrowId == null || borrowId.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：借用记录ID(borrowId)不能为空");
+        }
+        if (toUserId == null || toUserId.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：接受人ID(toUserId)不能为空");
+        }
         assetService.submitTransfer(fromUserId, borrowId, toUserId);
         return "转借请求已发起，等待对方确认";
     }
@@ -99,6 +114,9 @@ public class AssetTool {
     public String cancelBorrow(Map<String, Object> args) {
         String userId = (String) args.getOrDefault("userId", "");
         String borrowId = (String) args.get("borrowId");
+        if (borrowId == null || borrowId.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：借用记录ID(borrowId)不能为空");
+        }
         assetService.cancelBorrow(borrowId, userId);
         return "借用申请已取消";
     }
@@ -112,6 +130,9 @@ public class AssetTool {
     public String confirmTransfer(Map<String, Object> args) {
         String userId = (String) args.getOrDefault("userId", "");
         String transferId = (String) args.get("transferId");
+        if (transferId == null || transferId.isBlank()) {
+            throw new IllegalArgumentException("参数缺失：转借记录ID(transferId)不能为空");
+        }
         assetService.confirmTransfer(transferId, userId);
         return "转借已确认接收";
     }

@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import static com.helmsail.lightborrow.framework.constant.ErrorCode.AI_EMBEDDING_FAILED;
 
 /**
- * OpenAI 兼容 Embedding 模型实现（如 DeepSeek Embedding）。
+ * OpenAI 兼容 Embedding 模型实现（如 BGE-M3、Qwen-Embedding）。
  * 使用 RestClient + Resilience4j 重试熔断。
  */
 @Slf4j

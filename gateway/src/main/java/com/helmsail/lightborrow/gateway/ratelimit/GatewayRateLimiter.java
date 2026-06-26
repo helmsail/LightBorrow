@@ -1,5 +1,6 @@
 package com.helmsail.lightborrow.gateway.ratelimit;
 
+import com.helmsail.lightborrow.framework.ratelimit.RateLimiter;
 import com.helmsail.lightborrow.gateway.config.GatewayProperties;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -11,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.command.CommandAsyncExecutor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -29,9 +28,7 @@ import java.time.Duration;
  * </ul>
  */
 @Slf4j
-@Component
-@ConditionalOnBean(RedissonClient.class)
-public class GatewayRateLimiter {
+public class GatewayRateLimiter implements RateLimiter {
 
     private static final String RATE_LIMIT_KEY_PREFIX = "ratelimit:";
 

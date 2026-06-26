@@ -13,10 +13,13 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import java.util.Map;
 
 /**
- * Web 自动配置。注册 TraceId 过滤器、MDC 上下文传递装饰器。
+ * Web 自动配置。注册 TraceId 过滤器、MDC 上下文传递装饰器、CORS 跨域配置。
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
@@ -35,7 +38,28 @@ public class WebConfig {
     }
 
     /**
+     * CORS 全局跨域配置（允许开发环境前端 localhost:5173 访问）。
+     * 生产环境可在 application.yaml 中通过 lightborrow.cors.allowed-origins 覆盖。
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/**")
+                        .allowedOriginPatterns("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .maxAge(3600);
+            }
+        };
+    }
+
+    /**
      * MDC 上下文传递装饰器。解决 @Async / 线程池不继承父线程 MDC 的问题。
+     * 在 finally 中总是清理，防止线程池中不同请求间的上下文泄漏。
      */
     @Bean
     @ConditionalOnMissingBean
@@ -53,16 +77,8 @@ public class WebConfig {
                     }
                     runnable.run();
                 } finally {
-                    if (mdcContext != null) {
-                        MDC.setContextMap(mdcContext);
-                    } else {
-                        MDC.clear();
-                    }
-                    if (requestAttributes != null) {
-                        RequestContextHolder.setRequestAttributes(requestAttributes);
-                    } else {
-                        RequestContextHolder.resetRequestAttributes();
-                    }
+                    MDC.clear();
+                    RequestContextHolder.resetRequestAttributes();
                 }
             };
         };

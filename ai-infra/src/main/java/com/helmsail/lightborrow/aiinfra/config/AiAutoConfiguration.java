@@ -34,43 +34,43 @@ import javax.sql.DataSource;
 public class AiAutoConfiguration {
 
     /**
-     * LLM 聊天专用 RestClient（含 Auth Header + 超时）。
+     * LLM 聊天专用 RestClient。<p>
+     * 不硬编码 baseUrl 和 apiKey，通过 {@link DynamicAuthInterceptor} 每次请求实时读取配置。
      */
     @Bean
     @ConditionalOnMissingBean(name = "llmRestClient")
     public RestClient llmRestClient(AiProperties properties) {
         AiProperties.LlmProperties llm = properties.getLlm();
         return RestClient.builder()
-                .baseUrl(llm.getBaseUrl())
-                .defaultHeader("Authorization", "Bearer " + llm.getApiKey())
+                .requestInterceptor(new DynamicAuthInterceptor(llm::getBaseUrl, llm::getApiKey))
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
 
     /**
-     * LLM 流式调用专用 WebClient（含 Auth Header + 超时）。
+     * LLM 流式调用专用 WebClient。<p>
+     * 不硬编码 baseUrl 和 apiKey，通过 {@link DynamicExchangeFilter} 每次请求实时读取配置。
      */
     @Bean
     @ConditionalOnMissingBean(name = "llmWebClient")
     public WebClient llmWebClient(AiProperties properties) {
         AiProperties.LlmProperties llm = properties.getLlm();
         return WebClient.builder()
-                .baseUrl(llm.getBaseUrl())
-                .defaultHeader("Authorization", "Bearer " + llm.getApiKey())
+                .filter(new DynamicExchangeFilter(llm::getBaseUrl, llm::getApiKey))
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }
 
     /**
-     * Embedding 专用 RestClient（含 Auth Header + 超时）。
+     * Embedding 专用 RestClient。<p>
+     * 不硬编码 baseUrl 和 apiKey，通过 {@link DynamicAuthInterceptor} 每次请求实时读取配置。
      */
     @Bean
     @ConditionalOnMissingBean(name = "embeddingRestClient")
     public RestClient embeddingRestClient(AiProperties properties) {
         AiProperties.EmbeddingProperties emb = properties.getEmbedding();
         return RestClient.builder()
-                .baseUrl(emb.getBaseUrl())
-                .defaultHeader("Authorization", "Bearer " + emb.getApiKey())
+                .requestInterceptor(new DynamicAuthInterceptor(emb::getBaseUrl, emb::getApiKey))
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }

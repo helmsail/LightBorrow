@@ -14,18 +14,13 @@
     <artifactId>lightborrow-gateway</artifactId>
     <packaging>jar</packaging>
     <name>LightBorrow Gateway</name>
-    <description>IM platform gateway with channel adapters</description>
+    <description>Rate limiting module</description>
 
     <dependencies>
         <dependency>
             <groupId>com.helmsail</groupId>
             <artifactId>lightborrow-framework</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>

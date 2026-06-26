@@ -8,8 +8,12 @@ import com.helmsail.lightborrow.core.rewrite.LlmRewriteStage;
 import com.helmsail.lightborrow.core.rewrite.RewritePipeline;
 import com.helmsail.lightborrow.core.rewrite.RewriteStage;
 import com.helmsail.lightborrow.mcp.registry.ToolRegistry;
+import com.helmsail.lightborrow.aiinfra.config.AiAutoConfiguration;
+import com.helmsail.lightborrow.mcp.config.McpAutoConfiguration;
+import com.helmsail.lightborrow.memory.config.MemoryAutoConfiguration;
 import com.helmsail.lightborrow.memory.pipeline.MemoryPipeline;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import java.util.List;
 
 @AutoConfiguration
+@AutoConfigureAfter({MemoryAutoConfiguration.class, AiAutoConfiguration.class, McpAutoConfiguration.class})
 @EnableConfigurationProperties(CoreProperties.class)
 public class CoreAutoConfiguration {
 

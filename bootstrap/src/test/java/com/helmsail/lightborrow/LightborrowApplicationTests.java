@@ -36,9 +36,7 @@ class LightborrowApplicationTests {
 			@ComponentScan.Filter(type = FilterType.REGEX,
 					pattern = "com\\.helmsail\\.lightborrow\\.framework\\.config\\.Redis.*"),
 			@ComponentScan.Filter(type = FilterType.REGEX,
-					pattern = "com\\.helmsail\\.lightborrow\\.framework\\.redis\\..*"),
-			@ComponentScan.Filter(type = FilterType.REGEX,
-					pattern = "com\\.helmsail\\.lightborrow\\.framework\\.mq\\..*")
+					pattern = "com\\.helmsail\\.lightborrow\\.framework\\.redis\\..*")
 	})
 	static class TestConfig {
 	}

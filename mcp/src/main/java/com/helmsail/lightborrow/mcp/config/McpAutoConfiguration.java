@@ -6,7 +6,10 @@ import com.helmsail.lightborrow.mcp.tools.AskUserConfirmTool;
 import com.helmsail.lightborrow.mcp.tools.AskUserQuestionTool;
 import com.helmsail.lightborrow.mcp.tools.AssetTool;
 import com.helmsail.lightborrow.mcp.tools.RagSearchTool;
+import com.helmsail.lightborrow.rag.config.RagAutoConfiguration;
+import com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,7 +24,7 @@ import javax.sql.DataSource;
  * MCP 模块自动配置。
  */
 @AutoConfiguration
-@EnableConfigurationProperties(McpProperties.class)
+@AutoConfigureAfter(RagAutoConfiguration.class)
 public class McpAutoConfiguration {
 
     @Bean
@@ -58,9 +61,8 @@ public class McpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnClass(name = "com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline")
-    public RagSearchTool ragSearchTool(
-            com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline ragOnlinePipeline) {
+    @ConditionalOnBean(RagOnlinePipeline.class)
+    public RagSearchTool ragSearchTool(RagOnlinePipeline ragOnlinePipeline) {
         return new RagSearchTool(ragOnlinePipeline);
     }
 }

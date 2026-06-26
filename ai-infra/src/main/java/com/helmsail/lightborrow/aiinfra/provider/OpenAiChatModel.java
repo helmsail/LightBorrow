@@ -17,7 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.util.retry.RetrySpec;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -25,7 +27,7 @@ import static com.helmsail.lightborrow.framework.constant.ErrorCode.AI_API_CALL_
 
 /**
  * OpenAI 兼容聊天模型实现（如 DeepSeek）。
- * 同步调用使用 RestClient + Resilience4j 重试熔断，流式调用使用 WebClient SSE。
+ * 同步调用使用 RestClient + Resilience4j 重试熔断，流式调用使用 WebClient SSE + Reactor 重试。
  */
 @Slf4j
 public class OpenAiChatModel implements ChatModel {
@@ -67,7 +69,17 @@ public class OpenAiChatModel implements ChatModel {
     @Override
     public Flux<ChatResponseChunk> stream(ChatRequest request) {
         ChatRequest finalRequest = withDefaults(request, true);
-        return doStream(finalRequest);
+
+        // 流式调用：检查熔断状态，使用 Reactor 重试
+        if (!circuitBreaker.tryAcquirePermission()) {
+            log.warn("[AI] CircuitBreaker OPEN，流式调用被拒绝 model={}", properties.getModel());
+            return Flux.error(new AiException(AI_API_CALL_FAILED, properties.getModel() + " 服务熔断中"));
+        }
+
+        return doStream(finalRequest)
+                .retryWhen(RetrySpec.backoff(3, Duration.ofSeconds(1))
+                        .onRetryExhaustedThrow((spec, signal) ->
+                                new AiException(AI_API_CALL_FAILED, "流式调用重试耗尽")));
     }
 
     private ChatResponse doChat(ChatRequest request) {

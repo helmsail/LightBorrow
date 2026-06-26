@@ -3,6 +3,8 @@ package com.helmsail.lightborrow.mcp.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,7 @@ public class AssetService {
         return jdbcTemplate.queryForList(sql, userId, Math.min(limit, 100), Math.max(offset, 0));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void submitBorrow(String userId, String assetCode, String reason, String expectedReturnAt) {
         String sql = """
                 INSERT INTO borrow (user_id, asset_id, reason, expected_return_at, status, created_at)
@@ -68,6 +71,7 @@ public class AssetService {
         log.info("[MCP] 借用申请提交 userId={}, assetCode={}", userId, assetCode);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void submitTransfer(String fromUserId, String borrowId, String toUserId) {
         String sql = """
                 INSERT INTO transfer (from_user_id, borrow_id, to_user_id, status, created_at)
@@ -77,19 +81,23 @@ public class AssetService {
         log.info("[MCP] 转借发起 fromUserId={}, borrowId={}, toUserId={}", fromUserId, borrowId, toUserId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void cancelBorrow(String borrowId, String userId) {
         String sql = "UPDATE borrow SET status = 'cancelled', updated_at = NOW() WHERE id = ? AND user_id = ?";
         int rows = jdbcTemplate.update(sql, borrowId, userId);
         if (rows == 0) {
             log.warn("[MCP] 取消借用失败: borrowId={}, userId={}", borrowId, userId);
+            throw new IllegalStateException("取消借用失败：未找到对应的借用记录或无权操作");
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void confirmTransfer(String transferId, String userId) {
         String sql = "UPDATE transfer SET status = 'confirmed', updated_at = NOW() WHERE id = ? AND to_user_id = ?";
         int rows = jdbcTemplate.update(sql, transferId, userId);
         if (rows == 0) {
             log.warn("[MCP] 确认转借失败: transferId={}, userId={}", transferId, userId);
+            throw new IllegalStateException("确认转借失败：未找到对应的转借记录或无权操作");
         }
     }
 }

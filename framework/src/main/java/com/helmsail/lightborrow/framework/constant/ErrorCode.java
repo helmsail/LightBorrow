@@ -50,8 +50,7 @@ public enum ErrorCode {
     CORE_REACT_MAX_STEPS(407000, "ReAct 循环达到最大步数"),
 
     // === Gateway (408000-408999) ===
-    GATEWAY_RATE_LIMITED(408000, "请求过于频繁"),
-    GATEWAY_CHANNEL_ERROR(408001, "渠道适配失败"),
+    TOO_MANY_REQUESTS(429, "请求过于频繁"),
     ;
 
     private final int code;

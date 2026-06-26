@@ -20,7 +20,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         assertThatThrownBy(() -> registry.getTool("nonexistent"))
                 .isInstanceOf(McpException.class)
@@ -34,7 +34,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         assertThat(registry.hasTool("nonexistent")).isFalse();
     }
@@ -45,7 +45,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         // Manually inject a tool via reflection-like approach
         // ToolRegistry only has package-private methods, so we use invoke to add
@@ -59,7 +59,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         assertThatThrownBy(() -> registry.invoke("nonexistent", Map.of()))
                 .isInstanceOf(McpException.class);
@@ -71,7 +71,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         assertThat(registry.getToolDefinitions()).isEmpty();
     }
@@ -82,7 +82,7 @@ class ToolRegistryTest {
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
-        registry.init();
+        registry.onContextRefreshed(null);
 
         assertThatThrownBy(() -> registry.getToolDefinitions().add(null))
                 .isInstanceOf(UnsupportedOperationException.class);

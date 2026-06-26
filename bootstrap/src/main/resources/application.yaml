@@ -37,3 +37,9 @@ info:
   app:
     name: ${spring.application.name}
     version: @project.version@
+
+# Gateway 限流配置
+lightborrow:
+  gateway:
+    rate-limit-window-seconds: 60
+    rate-limit-max-requests: 20
