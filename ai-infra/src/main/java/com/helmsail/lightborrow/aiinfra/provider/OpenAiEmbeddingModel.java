@@ -80,8 +80,9 @@ public class OpenAiEmbeddingModel implements EmbeddingModel {
     }
 
     private List<float[]> doEmbedBatch(EmbeddingRequest request) {
-        log.debug("Calling Embedding batch: model={}, size={}", request.model(),
-                ((List<?>) request.input()).size());
+        Object input = request.input();
+        int size = (input instanceof List<?> list) ? list.size() : 1;
+        log.debug("Calling Embedding batch: model={}, size={}", request.model(), size);
         EmbeddingResponse response = restClient.post()
                 .uri(EMBEDDING_PATH)
                 .body(request)

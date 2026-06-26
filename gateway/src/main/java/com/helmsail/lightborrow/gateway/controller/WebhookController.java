@@ -48,8 +48,8 @@ public class WebhookController {
 
         try {
             InternalMessage msg = adapter.parseRequest(channel, body);
-            log.info("[Gateway] 收到消息 channel={}, userId={}, chatId={}, content={}",
-                    channel, msg.getUserId(), msg.getChatId(), msg.getContent());
+            log.info("[Gateway] 收到消息 channel={}, userId={}, chatId={}, contentLen={}",
+                    channel, msg.getUserId(), msg.getChatId(), msg.getContent() != null ? msg.getContent().length() : 0);
             return Result.success("ok");
         } catch (Exception e) {
             log.error("[Gateway] 消息解析失败 channel={}", channel, e);

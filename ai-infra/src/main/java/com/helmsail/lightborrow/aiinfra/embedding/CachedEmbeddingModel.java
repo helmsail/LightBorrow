@@ -20,7 +20,6 @@ public class CachedEmbeddingModel implements EmbeddingModel {
      * @param delegate 被装饰的真实 Embedding 模型
      * @param maxSize  最大缓存条目数
      */
-    @SuppressWarnings("SizeReplaceableByIsEmpty")
     public CachedEmbeddingModel(EmbeddingModel delegate, int maxSize) {
         this.delegate = delegate;
         // accessOrder=true 使 LinkedHashMap 按访问顺序排序（LRU）

@@ -8,6 +8,7 @@ import com.helmsail.lightborrow.rag.model.DocumentChunk;
 import com.helmsail.lightborrow.rag.strategy.chunking.ChunkingStrategy;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class RagOfflinePipeline {
         List<float[]> embeddings = embeddingModel.embedBatch(texts);
 
         // Step 3: Build VectorDocuments
-        List<VectorDocument> documents = new java.util.ArrayList<>();
+        List<VectorDocument> documents = new ArrayList<>();
         for (int i = 0; i < chunks.size(); i++) {
             DocumentChunk chunk = chunks.get(i);
             float[] embedding = i < embeddings.size() ? embeddings.get(i) : null;

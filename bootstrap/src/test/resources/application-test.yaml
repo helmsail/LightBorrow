@@ -14,7 +14,6 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-      - com.helmsail.lightborrow.framework.mq.StreamConfig
       - com.helmsail.lightborrow.mcp.config.McpAutoConfiguration
       - com.helmsail.lightborrow.memory.config.MemoryAutoConfiguration
       - com.helmsail.lightborrow.rag.config.RagAutoConfiguration

@@ -5,6 +5,7 @@ import com.helmsail.lightborrow.memory.exception.MemoryException;
 import com.helmsail.lightborrow.memory.model.MemoryContext;
 import com.helmsail.lightborrow.memory.model.SessionState;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Map;
@@ -46,7 +47,7 @@ public class SessionStage implements MemoryStage {
                         .lastAccessAt(toLong(entries.get("lastAccessAt")))
                         .build());
             }
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 会话加载失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_SESSION_FAILED, e, ctx.getUserId());
         }
@@ -65,7 +66,7 @@ public class SessionStage implements MemoryStage {
                     "createdAt", String.valueOf(state.getCreatedAt()),
                     "lastAccessAt", String.valueOf(state.getLastAccessAt())
             ));
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 会话保存失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_SESSION_FAILED, e, ctx.getUserId());
         }

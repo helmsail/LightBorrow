@@ -1,14 +1,13 @@
 package com.helmsail.lightborrow.gateway.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * 统一内部消息模型。Gateway 从 IM 平台收到消息后转换为 InternalMessage。
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

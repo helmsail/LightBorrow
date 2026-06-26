@@ -38,14 +38,6 @@ public final class DateUtil {
         return dateTime.format(DEFAULT_FORMATTER);
     }
 
-    public static String format(LocalDate date, String pattern) {
-        return date.format(getCachedFormatter(pattern));
-    }
-
-    public static String format(TemporalAccessor temporal, DateTimeFormatter formatter) {
-        return formatter.format(temporal);
-    }
-
     // ========== 解析 ==========
 
     public static LocalDateTime parse(String dateStr, String pattern) {
@@ -54,10 +46,6 @@ public final class DateUtil {
 
     public static LocalDateTime parse(String dateStr) {
         return LocalDateTime.parse(dateStr, DEFAULT_FORMATTER);
-    }
-
-    public static LocalDate parseDate(String dateStr, String pattern) {
-        return LocalDate.parse(dateStr, getCachedFormatter(pattern));
     }
 
     // ========== 当前时间 ==========
@@ -70,10 +58,6 @@ public final class DateUtil {
         return format(now());
     }
 
-    public static String nowStr(String pattern) {
-        return format(now(), pattern);
-    }
-
     // ========== 时间戳转换 ==========
 
     public static long toEpochMilli(LocalDateTime dateTime) {
@@ -82,10 +66,6 @@ public final class DateUtil {
 
     public static LocalDateTime fromEpochMilli(long epochMilli) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault());
-    }
-
-    public static long nowEpochMilli() {
-        return System.currentTimeMillis();
     }
 
     // ========== 内部方法 ==========

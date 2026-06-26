@@ -34,22 +34,6 @@ public class SpringContextHolder implements ApplicationContextAware {
         return applicationContext.getBean(name, clazz);
     }
 
-    public static String getActiveProfile() {
-        checkInitialized();
-        String[] profiles = applicationContext.getEnvironment().getActiveProfiles();
-        return profiles.length > 0 ? profiles[0] : null;
-    }
-
-    public static String getProperty(String key) {
-        checkInitialized();
-        return applicationContext.getEnvironment().getProperty(key);
-    }
-
-    public static String getProperty(String key, String defaultValue) {
-        checkInitialized();
-        return applicationContext.getEnvironment().getProperty(key, defaultValue);
-    }
-
     private static void checkInitialized() {
         Assert.state(applicationContext != null, "Spring 尚未初始化完成，请确保在 ApplicationContext 初始化后调用");
     }

@@ -39,39 +39,4 @@ class SpringContextHolderTest {
         assertThat(SpringContextHolder.getBean("myBean", String.class)).isEqualTo("namedBean");
     }
 
-    @Test
-    void shouldGetActiveProfile() {
-        ApplicationContext mockContext = mock(ApplicationContext.class);
-        when(mockContext.getEnvironment()).thenReturn(mock(org.springframework.core.env.Environment.class));
-        when(mockContext.getEnvironment().getActiveProfiles()).thenReturn(new String[]{"dev"});
-
-        SpringContextHolder holder = new SpringContextHolder();
-        holder.setApplicationContext(mockContext);
-
-        assertThat(SpringContextHolder.getActiveProfile()).isEqualTo("dev");
-    }
-
-    @Test
-    void shouldGetProperty() {
-        ApplicationContext mockContext = mock(ApplicationContext.class);
-        when(mockContext.getEnvironment()).thenReturn(mock(org.springframework.core.env.Environment.class));
-        when(mockContext.getEnvironment().getProperty("test.key")).thenReturn("testValue");
-
-        SpringContextHolder holder = new SpringContextHolder();
-        holder.setApplicationContext(mockContext);
-
-        assertThat(SpringContextHolder.getProperty("test.key")).isEqualTo("testValue");
-    }
-
-    @Test
-    void shouldGetPropertyWithDefault() {
-        ApplicationContext mockContext = mock(ApplicationContext.class);
-        when(mockContext.getEnvironment()).thenReturn(mock(org.springframework.core.env.Environment.class));
-        when(mockContext.getEnvironment().getProperty("missing.key", "default")).thenReturn("default");
-
-        SpringContextHolder holder = new SpringContextHolder();
-        holder.setApplicationContext(mockContext);
-
-        assertThat(SpringContextHolder.getProperty("missing.key", "default")).isEqualTo("default");
-    }
 }

@@ -3,8 +3,6 @@ package com.helmsail.lightborrow.framework.http;
 import com.helmsail.lightborrow.framework.constant.HttpConstant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;

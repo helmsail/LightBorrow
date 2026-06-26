@@ -1,5 +1,6 @@
 package com.helmsail.lightborrow.gateway.adapter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helmsail.lightborrow.gateway.config.GatewayProperties;
@@ -8,7 +9,6 @@ import com.helmsail.lightborrow.gateway.model.InternalMessage;
 import com.helmsail.lightborrow.gateway.model.ReplyMessage;
 import com.helmsail.lightborrow.gateway.util.SignUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -21,10 +21,12 @@ import static com.helmsail.lightborrow.framework.constant.ErrorCode.GATEWAY_CHAN
  * <br>请求头：X-Lark-Request-Timestamp、X-Lark-Request-Nonce、X-Lark-Signature
  */
 @Slf4j
-@Component
 public class FeishuAdapter implements ChannelAdapter {
 
     private static final String CHANNEL = "feishu";
+
+    private static final String HEADER_TIMESTAMP = "x-lark-request-timestamp";
+    private static final String HEADER_SIGNATURE = "x-lark-signature";
 
     private final GatewayProperties gatewayProperties;
     private final ObjectMapper objectMapper;
@@ -39,7 +41,6 @@ public class FeishuAdapter implements ChannelAdapter {
         try {
             JsonNode root = objectMapper.readTree(rawBody);
             JsonNode event = root.path("event");
-            JsonNode sender = event.path("sender");
             JsonNode message = event.path("message");
 
             String msgId = message.path("message_id").asText("");
@@ -56,7 +57,7 @@ public class FeishuAdapter implements ChannelAdapter {
                     .rawData(rawBody)
                     .timestamp(System.currentTimeMillis())
                     .build();
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             log.error("[Feishu] 消息解析失败", e);
             throw new GatewayException(GATEWAY_CHANNEL_ERROR, e, "飞书消息格式异常");
         }
@@ -76,8 +77,8 @@ public class FeishuAdapter implements ChannelAdapter {
             return;
         }
 
-        String timestamp = headers.get("x-lark-request-timestamp");
-        String signature = headers.get("x-lark-signature");
+        String timestamp = headers.get(HEADER_TIMESTAMP);
+        String signature = headers.get(HEADER_SIGNATURE);
 
         if (timestamp == null || signature == null) {
             log.warn("[Feishu] 缺少验签头 x-lark-request-timestamp / x-lark-signature");
@@ -98,7 +99,7 @@ public class FeishuAdapter implements ChannelAdapter {
         try {
             JsonNode root = objectMapper.readTree(rawBody);
             return root.path("event").path("sender").path("sender_id").path("user_id").asText("");
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             return "";
         }
     }
@@ -108,7 +109,7 @@ public class FeishuAdapter implements ChannelAdapter {
         try {
             JsonNode root = objectMapper.readTree(rawBody);
             return root.path("event").path("message").path("chat_id").asText("");
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             return "";
         }
     }

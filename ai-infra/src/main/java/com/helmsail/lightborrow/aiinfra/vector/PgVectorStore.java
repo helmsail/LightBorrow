@@ -3,10 +3,9 @@ package com.helmsail.lightborrow.aiinfra.vector;
 import com.helmsail.lightborrow.aiinfra.config.AiProperties;
 import com.helmsail.lightborrow.aiinfra.exception.AiException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Array;
-import java.sql.Connection;
 import java.util.List;
 
 import static com.helmsail.lightborrow.framework.constant.ErrorCode.AI_VECTOR_SEARCH_FAILED;
@@ -30,24 +29,27 @@ public class PgVectorStore implements VectorStore {
     }
 
     private void initTable(AiProperties.VectorProperties properties) {
-        // 初始化 pgvector 表结构（仅 PostgreSQL 生效）
-        jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
-        String createTable = """
-                CREATE TABLE IF NOT EXISTS %s (
-                    id VARCHAR(64) PRIMARY KEY,
-                    embedding vector(%d),
-                    metadata JSONB,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """.formatted(tableName, dimension);
-        jdbcTemplate.execute(createTable);
-        String createIndex = """
-                CREATE INDEX IF NOT EXISTS idx_%s_embedding
-                ON %s USING hnsw (embedding vector_cosine_ops)
-                WITH (m = %d, ef_construction = %d)
-                """.formatted(tableName, tableName, properties.getHnswM(), properties.getHnswEfConstruction());
-        jdbcTemplate.execute(createIndex);
-        log.info("Initialized pgvector table '{}' with HNSW index (dim={})", tableName, dimension);
+        try {
+            jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+            String createTable = """
+                    CREATE TABLE IF NOT EXISTS %s (
+                        id VARCHAR(64) PRIMARY KEY,
+                        embedding vector(%d),
+                        metadata JSONB,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """.formatted(tableName, dimension);
+            jdbcTemplate.execute(createTable);
+            String createIndex = """
+                    CREATE INDEX IF NOT EXISTS idx_%s_embedding
+                    ON %s USING hnsw (embedding vector_cosine_ops)
+                    WITH (m = %d, ef_construction = %d)
+                    """.formatted(tableName, tableName, properties.getHnswM(), properties.getHnswEfConstruction());
+            jdbcTemplate.execute(createIndex);
+            log.info("Initialized pgvector table '{}' with HNSW index (dim={})", tableName, dimension);
+        } catch (DataAccessException e) {
+            log.warn("Failed to initialize pgvector table '{}', non-PostgreSQL environment?", tableName, e);
+        }
     }
 
     @Override
@@ -59,7 +61,7 @@ public class PgVectorStore implements VectorStore {
                 """.formatted(tableName);
         try {
             jdbcTemplate.update(sql, document.getId(), toPgVector(document.getEmbedding()), document.getMetadata());
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             throw new AiException(AI_VECTOR_STORE_FAILED, e, "upsert", document.getId());
         }
     }
@@ -77,7 +79,7 @@ public class PgVectorStore implements VectorStore {
                 ps.setObject(2, toPgVector(doc.getEmbedding()));
                 ps.setString(3, doc.getMetadata());
             });
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             throw new AiException(AI_VECTOR_STORE_FAILED, e, "upsertAll", documents.size());
         }
     }
@@ -102,7 +104,7 @@ public class PgVectorStore implements VectorStore {
                         rs.getDouble("distance")
                 );
             }, vecStr, vecStr, topK);
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             throw new AiException(AI_VECTOR_SEARCH_FAILED, e, tableName);
         }
     }

@@ -12,6 +12,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "lightborrow.mcp")
 public class McpProperties {
 
-    /** 工具扫描的基础包，为空则扫描全部 */
-    private String basePackage = "";
 }

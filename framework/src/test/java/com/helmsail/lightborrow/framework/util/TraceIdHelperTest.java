@@ -28,42 +28,6 @@ class TraceIdHelperTest {
     }
 
     @Test
-    void shouldGetCurrentTraceId() {
-        MDC.put("traceId", "current-id");
-        assertThat(TraceIdHelper.getCurrentTraceId()).isEqualTo("current-id");
-    }
-
-    @Test
-    void shouldReturnNullWhenNoTraceId() {
-        assertThat(TraceIdHelper.getCurrentTraceId()).isNull();
-    }
-
-    @Test
-    void shouldSetTraceId() {
-        TraceIdHelper.setTraceId("set-id");
-        assertThat(MDC.get("traceId")).isEqualTo("set-id");
-    }
-
-    @Test
-    void shouldNotSetBlankTraceId() {
-        TraceIdHelper.setTraceId("");
-        assertThat(MDC.get("traceId")).isNull();
-    }
-
-    @Test
-    void shouldNotSetNullTraceId() {
-        TraceIdHelper.setTraceId(null);
-        assertThat(MDC.get("traceId")).isNull();
-    }
-
-    @Test
-    void shouldClearTraceId() {
-        MDC.put("traceId", "to-clear");
-        TraceIdHelper.clearTraceId();
-        assertThat(MDC.get("traceId")).isNull();
-    }
-
-    @Test
     void shouldGenerate32CharUuid() {
         assertThat(TraceIdHelper.generateTraceId()).hasSize(32);
     }

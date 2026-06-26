@@ -16,9 +16,9 @@ class BusinessExceptionTest {
 
     @Test
     void shouldCreateWithErrorCode() {
-        BusinessException e = new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
-        assertThat(e.getCode()).isEqualTo(400101);
-        assertThat(e.getMessage()).isEqualTo("资源不存在");
+        BusinessException e = new BusinessException(ErrorCode.INVALID_PARAMETER);
+        assertThat(e.getCode()).isEqualTo(400008);
+        assertThat(e.getMessage()).isEqualTo("参数校验失败");
     }
 
     @Test
@@ -39,8 +39,8 @@ class BusinessExceptionTest {
     @Test
     void shouldCreateWithErrorCodeCauseAndArgs() {
         Throwable cause = new RuntimeException("root");
-        BusinessException e = new BusinessException(ErrorCode.FRAMEWORK_ERROR, cause, "arg1");
+        BusinessException e = new BusinessException(ErrorCode.BIZ_ERROR, cause, "arg1");
         assertThat(e.getCause()).isSameAs(cause);
-        assertThat(e.getCode()).isEqualTo(400000);
+        assertThat(e.getCode()).isEqualTo(400100);
     }
 }

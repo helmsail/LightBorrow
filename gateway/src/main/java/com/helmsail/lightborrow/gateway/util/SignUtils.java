@@ -1,8 +1,11 @@
 package com.helmsail.lightborrow.gateway.util;
 
+import com.helmsail.lightborrow.framework.constant.ErrorCode;
+import com.helmsail.lightborrow.gateway.exception.GatewayException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -28,8 +31,8 @@ public class SignUtils {
             mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] signData = mac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(signData);
-        } catch (Exception e) {
-            throw new RuntimeException("HMAC-SHA256 签名计算失败", e);
+        } catch (GeneralSecurityException e) {
+            throw new GatewayException(ErrorCode.GATEWAY_CHANNEL_ERROR, e, "HMAC-SHA256 签名计算失败");
         }
     }
 
@@ -53,7 +56,7 @@ public class SignUtils {
             }
             return hex.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-1 签名计算失败", e);
+            throw new GatewayException(ErrorCode.GATEWAY_CHANNEL_ERROR, e, "SHA-1 签名计算失败");
         }
     }
 }

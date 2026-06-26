@@ -1,6 +1,8 @@
 package com.helmsail.lightborrow.framework.config;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -9,8 +11,10 @@ import java.time.Duration;
 /**
  * HTTP 客户端配置属性。
  */
+@Getter
+@Setter
+@ToString
 @Validated
-@Data
 @ConfigurationProperties(prefix = "lightborrow.http")
 public class HttpProperties {
 

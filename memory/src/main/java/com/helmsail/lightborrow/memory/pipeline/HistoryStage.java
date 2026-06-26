@@ -5,6 +5,7 @@ import com.helmsail.lightborrow.memory.config.MemoryProperties;
 import com.helmsail.lightborrow.memory.exception.MemoryException;
 import com.helmsail.lightborrow.memory.model.MemoryContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class HistoryStage implements MemoryStage {
             ctx.setHistoryMessages(messages != null ? messages : new ArrayList<>());
             log.debug("[Memory] 历史加载 userId={}, count={}", ctx.getUserId(),
                     ctx.getHistoryMessages().size());
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 历史加载失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_HISTORY_FAILED, e, ctx.getUserId());
         }
@@ -49,7 +50,7 @@ public class HistoryStage implements MemoryStage {
             if (size != null && size > maxHistory) {
                 stringRedisTemplate.opsForList().trim(key, size - maxHistory, -1);
             }
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 历史保存失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_HISTORY_FAILED, e, ctx.getUserId());
         }
@@ -64,7 +65,7 @@ public class HistoryStage implements MemoryStage {
             if (size != null && size > maxHistory) {
                 stringRedisTemplate.opsForList().trim(key, size - maxHistory, -1);
             }
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 消息追加失败 userId={}", userId, e);
             throw new MemoryException(ErrorCode.MEMORY_HISTORY_FAILED, e, userId);
         }

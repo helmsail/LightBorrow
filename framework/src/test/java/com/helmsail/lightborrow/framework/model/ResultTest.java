@@ -52,18 +52,18 @@ class ResultTest {
 
     @Test
     void shouldReturnErrorFromErrorCodeWithArgs() {
-        Result<Void> result = Result.error(ErrorCode.RESOURCE_NOT_FOUND, "order_123");
-        assertThat(result.getCode()).isEqualTo(400101);
-        assertThat(result.getMsg()).isEqualTo("资源不存在");
+        Result<Void> result = Result.error(ErrorCode.INVALID_PARAMETER, "order_123");
+        assertThat(result.getCode()).isEqualTo(400008);
+        assertThat(result.getMsg()).isEqualTo("参数校验失败");
     }
 
     @Test
     void shouldReturnErrorFromBusinessException() {
-        BusinessException be = new BusinessException(ErrorCode.OPERATION_NOT_ALLOWED);
+        BusinessException be = new BusinessException(ErrorCode.BIZ_ERROR);
         Result<Void> result = Result.error(be);
         assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getCode()).isEqualTo(400103);
-        assertThat(result.getMsg()).isEqualTo("操作不允许");
+        assertThat(result.getCode()).isEqualTo(400100);
+        assertThat(result.getMsg()).isEqualTo("业务处理失败");
     }
 
     @Test

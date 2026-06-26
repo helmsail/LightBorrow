@@ -8,9 +8,9 @@ import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.distributed.proxy.RecoveryStrategy;
 import io.github.bucket4j.redis.redisson.Bucket4jRedisson;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.command.CommandAsyncExecutor;
-import org.redisson.Redisson;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +41,9 @@ public class GatewayRateLimiter {
     public GatewayRateLimiter(RedissonClient redissonClient, GatewayProperties gatewayProperties) {
         this.gatewayProperties = gatewayProperties;
 
+        if (!(redissonClient instanceof Redisson)) {
+            throw new IllegalArgumentException("RedissonClient must be a Redisson instance");
+        }
         CommandAsyncExecutor executor = ((Redisson) redissonClient).getCommandExecutor();
         this.proxyManager = Bucket4jRedisson.casBasedBuilder(executor)
                 .defaultRecoveryStrategy(RecoveryStrategy.RECONSTRUCT)

@@ -1,6 +1,5 @@
 package com.helmsail.lightborrow.framework.config;
 
-import com.helmsail.lightborrow.framework.mq.RedisStreamPublisher;
 import com.helmsail.lightborrow.framework.redis.RedisService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -51,11 +50,5 @@ public class RedisConfig {
     @ConditionalOnMissingBean
     public RedisService redisService(StringRedisTemplate stringRedisTemplate) {
         return new RedisService(stringRedisTemplate);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public RedisStreamPublisher redisStreamPublisher(StringRedisTemplate stringRedisTemplate) {
-        return new RedisStreamPublisher(stringRedisTemplate);
     }
 }

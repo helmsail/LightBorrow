@@ -12,6 +12,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 import java.net.URI;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,7 +37,9 @@ class LoggingClientHttpRequestInterceptorTest {
         when(request.getURI()).thenReturn(URI.create("http://example.com/api"));
         when(execution.execute(request, new byte[0])).thenReturn(mockResponse);
 
-        interceptor.intercept(request, new byte[0], execution);
+        ClientHttpResponse result = interceptor.intercept(request, new byte[0], execution);
+
+        assertThat(result).isSameAs(mockResponse);
     }
 
     @Test
@@ -44,10 +48,8 @@ class LoggingClientHttpRequestInterceptorTest {
         when(request.getURI()).thenReturn(URI.create("http://example.com/api"));
         when(execution.execute(request, new byte[0])).thenThrow(new IOException("connection reset"));
 
-        try {
-            interceptor.intercept(request, new byte[0], execution);
-        } catch (IOException e) {
-            // expected
-        }
+        assertThatThrownBy(() -> interceptor.intercept(request, new byte[0], execution))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("connection reset");
     }
 }

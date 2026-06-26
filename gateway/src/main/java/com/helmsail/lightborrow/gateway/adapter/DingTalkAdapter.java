@@ -1,5 +1,6 @@
 package com.helmsail.lightborrow.gateway.adapter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helmsail.lightborrow.gateway.config.GatewayProperties;
@@ -8,7 +9,6 @@ import com.helmsail.lightborrow.gateway.model.InternalMessage;
 import com.helmsail.lightborrow.gateway.model.ReplyMessage;
 import com.helmsail.lightborrow.gateway.util.SignUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -21,10 +21,12 @@ import static com.helmsail.lightborrow.framework.constant.ErrorCode.GATEWAY_CHAN
  * <br>请求头：timestamp（毫秒级）、sign
  */
 @Slf4j
-@Component
 public class DingTalkAdapter implements ChannelAdapter {
 
     private static final String CHANNEL = "dingtalk";
+
+    private static final String HEADER_TIMESTAMP = "timestamp";
+    private static final String HEADER_SIGN = "sign";
 
     private final GatewayProperties gatewayProperties;
     private final ObjectMapper objectMapper;
@@ -57,7 +59,7 @@ public class DingTalkAdapter implements ChannelAdapter {
                     .rawData(rawBody)
                     .timestamp(System.currentTimeMillis())
                     .build();
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             log.error("[DingTalk] 消息解析失败", e);
             throw new GatewayException(GATEWAY_CHANNEL_ERROR, e, "钉钉消息格式异常");
         }
@@ -77,8 +79,8 @@ public class DingTalkAdapter implements ChannelAdapter {
             return;
         }
 
-        String timestamp = headers.get("timestamp");
-        String sign = headers.get("sign");
+        String timestamp = headers.get(HEADER_TIMESTAMP);
+        String sign = headers.get(HEADER_SIGN);
 
         if (timestamp == null || sign == null) {
             log.warn("[DingTalk] 缺少验签头 timestamp / sign");
@@ -104,7 +106,7 @@ public class DingTalkAdapter implements ChannelAdapter {
                 userId = root.path("senderId").asText("");
             }
             return userId;
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             return "";
         }
     }
@@ -114,7 +116,7 @@ public class DingTalkAdapter implements ChannelAdapter {
         try {
             JsonNode root = objectMapper.readTree(rawBody);
             return root.path("conversationId").asText("");
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             return "";
         }
     }

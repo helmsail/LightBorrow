@@ -1,14 +1,13 @@
 package com.helmsail.lightborrow.gateway.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * 回复消息。AgentLoop 处理完成后，构建 ReplyMessage 返回给用户。
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

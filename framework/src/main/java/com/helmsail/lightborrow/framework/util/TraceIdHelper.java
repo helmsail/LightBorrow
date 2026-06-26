@@ -25,21 +25,6 @@ public final class TraceIdHelper {
         return traceId;
     }
 
-    public static String getCurrentTraceId() {
-        return MDC.get(HttpConstant.MDC_TRACE_ID);
-    }
-
-    public static void setTraceId(String traceId) {
-        if (traceId != null && !traceId.isBlank()) {
-            MDC.put(HttpConstant.MDC_TRACE_ID, traceId);
-        }
-    }
-
-    public static void clearTraceId() {
-        MDC.remove(HttpConstant.MDC_TRACE_ID);
-    }
-
-    /** 生成 32 位 UUID（无横线）作为 traceId */
     public static String generateTraceId() {
         return UUID.randomUUID().toString().replace("-", "");
     }

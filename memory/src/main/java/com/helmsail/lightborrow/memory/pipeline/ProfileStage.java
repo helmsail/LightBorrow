@@ -4,6 +4,7 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.memory.exception.MemoryException;
 import com.helmsail.lightborrow.memory.model.MemoryContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class ProfileStage implements MemoryStage {
                 ctx.setProfileSummary(sb.toString());
             }
             log.debug("[Memory] 画像加载 userId={}", ctx.getUserId());
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("[Memory] 画像加载失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_PROFILE_FAILED, e, ctx.getUserId());
         }

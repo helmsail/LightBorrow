@@ -1,6 +1,8 @@
 package com.helmsail.lightborrow.gateway.config;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
@@ -20,13 +22,11 @@ import java.util.Map;
  *         verify-token: xxx
  *       dingtalk:
  *         app-secret: xxx
- *       wechat:
- *         token: xxx
- *         encoding-aes-key: xxx
- *         corp-id: xxx
  * }</pre>
  */
-@Data
+@Getter
+@Setter
+@ToString
 @ConfigurationProperties(prefix = "lightborrow.gateway")
 public class GatewayProperties {
 
@@ -39,7 +39,9 @@ public class GatewayProperties {
     /** 各 IM 渠道凭证配置，key 为渠道名（feishu / dingtalk / wechat） */
     private Map<String, ChannelConfig> channels;
 
-    @Data
+    @Getter
+    @Setter
+    @ToString
     public static class ChannelConfig {
 
         /** 应用密钥（飞书、钉钉必填） */
@@ -47,14 +49,5 @@ public class GatewayProperties {
 
         /** 飞书 VerifyToken（事件订阅校验） */
         private String verifyToken;
-
-        /** 企业微信 Token（回调 URL 验证） */
-        private String token;
-
-        /** 企业微信 EncodingAESKey */
-        private String encodingAesKey;
-
-        /** 企业微信 CorpID */
-        private String corpId;
     }
 }

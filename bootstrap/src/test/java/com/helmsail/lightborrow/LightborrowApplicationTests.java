@@ -25,7 +25,6 @@ class LightborrowApplicationTests {
 			"com.helmsail.lightborrow.core.config.CoreAutoConfiguration",
 			"com.helmsail.lightborrow.gateway.config.GatewayAutoConfiguration",
 			"com.helmsail.lightborrow.framework.config.RedisConfig",
-			"com.helmsail.lightborrow.framework.mq.StreamConfig",
 			"org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
 			"org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration",
 			"org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"

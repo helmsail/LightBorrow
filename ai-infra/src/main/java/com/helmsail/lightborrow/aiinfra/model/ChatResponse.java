@@ -18,8 +18,8 @@ public record ChatResponse(
 
     public String content() {
         if (choices == null || choices.isEmpty()) return null;
-        Choice choice = choices.get(0);
-        return choice.message() != null ? choice.message().content() : choice.text();
+        Message msg = choices.get(0).message();
+        return msg != null ? msg.content() : null;
     }
 
     public List<ChatMessage.ToolCall> toolCalls() {
@@ -30,7 +30,7 @@ public record ChatResponse(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record Choice(Message message, String text, String finishReason) {}
+    public record Choice(Message message, String finishReason) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Message(String content, @JsonProperty("tool_calls") List<ChatMessage.ToolCall> toolCalls) {}

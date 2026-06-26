@@ -64,7 +64,7 @@ public class RagOnlinePipeline {
     /**
      * 将 VectorDocument（metadata 中存储了 content）转换为 DocumentChunk。
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // JsonUtil.fromJson 返回 Map，metadata 格式已知
     private static DocumentChunk toDocumentChunk(VectorDocument doc) {
         if (doc.getMetadata() == null || doc.getMetadata().isBlank()) {
             return null;

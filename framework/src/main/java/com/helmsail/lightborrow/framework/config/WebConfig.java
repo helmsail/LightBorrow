@@ -53,8 +53,16 @@ public class WebConfig {
                     }
                     runnable.run();
                 } finally {
-                    MDC.clear();
-                    RequestContextHolder.resetRequestAttributes();
+                    if (mdcContext != null) {
+                        MDC.setContextMap(mdcContext);
+                    } else {
+                        MDC.clear();
+                    }
+                    if (requestAttributes != null) {
+                        RequestContextHolder.setRequestAttributes(requestAttributes);
+                    } else {
+                        RequestContextHolder.resetRequestAttributes();
+                    }
                 }
             };
         };

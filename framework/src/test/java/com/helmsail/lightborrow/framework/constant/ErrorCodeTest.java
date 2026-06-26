@@ -30,13 +30,13 @@ class ErrorCodeTest {
 
     @Test
     void shouldHandleMultiplePlaceholders() {
-        String result = ErrorCode.RESOURCE_NOT_FOUND.getMessage("order_123");
-        assertThat(result).isEqualTo("资源不存在");
+        String result = ErrorCode.INVALID_PARAMETER.getMessage("order_123");
+        assertThat(result).isEqualTo("参数校验失败");
     }
 
     @Test
     void frameworkErrorCodesShouldBeInCorrectRange() {
-        assertThat(ErrorCode.FRAMEWORK_ERROR.getCode()).isBetween(400000, 400999);
+        assertThat(ErrorCode.INVALID_PARAMETER.getCode()).isBetween(400000, 400999);
         assertThat(ErrorCode.ID_GENERATION_FAILED.getCode()).isBetween(400000, 400999);
     }
 

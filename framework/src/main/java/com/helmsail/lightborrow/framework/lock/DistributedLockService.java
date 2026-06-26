@@ -1,5 +1,7 @@
 package com.helmsail.lightborrow.framework.lock;
 
+import com.helmsail.lightborrow.framework.constant.ErrorCode;
+import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -50,15 +52,14 @@ public class DistributedLockService {
             locked = lock.tryLock(waitMs, DEFAULT_LEASE_MILLIS, TimeUnit.MILLISECONDS);
             if (!locked) {
                 log.warn("[分布式锁] 获取锁超时 key={}, waitMs={}", key, waitMs);
-                throw new RuntimeException("获取分布式锁超时: " + key);
+                throw new FrameworkException(ErrorCode.BIZ_ERROR, key);
             }
             log.debug("[分布式锁] 获取成功 key={}", key);
             return task.get();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("[分布式锁] 执行异常 key={}", key, e);
-            throw new RuntimeException("分布式锁执行异常: " + key, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("[分布式锁] 线程中断 key={}", key, e);
+            throw new FrameworkException(ErrorCode.BIZ_ERROR, e, key);
         } finally {
             if (locked && lock.isHeldByCurrentThread()) {
                 lock.unlock();

@@ -74,14 +74,14 @@ public class ToolRegistry {
     }
 
     private Map<String, Object> buildParametersSchema(Method method, McpParam[] params) {
-        Map<String, Object> schema = new LinkedHashMap<>();
+        Map<String, Object> schema = new LinkedHashMap<>(4);
         schema.put("type", "object");
 
         if (params != null && params.length > 0) {
-            Map<String, Object> properties = new LinkedHashMap<>();
-            List<String> required = new ArrayList<>();
+            Map<String, Object> properties = new LinkedHashMap<>(4);
+            List<String> required = new ArrayList<>(4);
             for (McpParam param : params) {
-                Map<String, Object> prop = new LinkedHashMap<>();
+                Map<String, Object> prop = new LinkedHashMap<>(4);
                 prop.put("type", "string");
                 if (!param.desc().isEmpty()) {
                     prop.put("description", param.desc());
@@ -96,19 +96,19 @@ public class ToolRegistry {
             return schema;
         }
 
-        Map<String, Object> properties = new LinkedHashMap<>();
-        List<String> required = new ArrayList<>();
+        Map<String, Object> properties = new LinkedHashMap<>(4);
+        List<String> required = new ArrayList<>(4);
 
         if (method.getParameterCount() == 1
                 && method.getParameterTypes()[0] == String.class) {
-            Map<String, Object> prop = new LinkedHashMap<>();
+            Map<String, Object> prop = new LinkedHashMap<>(2);
             prop.put("type", "string");
             prop.put("description", "输入参数");
             properties.put("input", prop);
             required.add("input");
         } else if (method.getParameterCount() == 1
                 && method.getParameterTypes()[0] == Map.class) {
-            Map<String, Object> prop = new LinkedHashMap<>();
+            Map<String, Object> prop = new LinkedHashMap<>(2);
             prop.put("type", "object");
             prop.put("description", "工具参数");
             properties.put("args", prop);

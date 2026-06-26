@@ -23,8 +23,8 @@ public class AssetService {
 
     public List<Map<String, Object>> queryAsset(String code, String name, String keyword,
                                                  int limit, int offset) {
-        List<String> conditions = new ArrayList<>();
-        List<Object> params = new ArrayList<>();
+        List<String> conditions = new ArrayList<>(4);
+        List<Object> params = new ArrayList<>(8);
         if (code != null && !code.isBlank()) {
             conditions.add("code = ?");
             params.add(code);

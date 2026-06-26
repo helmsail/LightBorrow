@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -25,7 +26,15 @@ public class ConversationContext {
     private MemoryContext memoryContext;
 
     /** 完整消息列表（含 system prompt + history + 工具调用记录） */
-    private List<ChatMessage> messages = new ArrayList<>();
+    private List<ChatMessage> messages = new ArrayList<>(4);
+
+    public List<ChatMessage> getMessages() {
+        return Collections.unmodifiableList(messages);
+    }
+
+    public void setMessages(List<ChatMessage> messages) {
+        this.messages = new ArrayList<>(messages);
+    }
 
     /** 最终回答 */
     private String finalAnswer;

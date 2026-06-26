@@ -185,7 +185,7 @@ public class ReActLoop {
 
     /** 构建消息列表。 */
     private List<ChatMessage> buildMessages(String systemPrompt, ConversationContext ctx) {
-        List<ChatMessage> messages = new ArrayList<>();
+        List<ChatMessage> messages = new ArrayList<>(4);
         messages.add(ChatMessage.system(systemPrompt));
         messages.add(ChatMessage.user(ctx.getRewrittenInput() != null
                 ? ctx.getRewrittenInput() : ctx.getUserInput()));
@@ -197,12 +197,12 @@ public class ReActLoop {
     private List<Map<String, Object>> buildToolDefinitions() {
         List<ToolDefinition> tools = toolRegistry.getToolDefinitions();
         return tools.stream().map(tool -> {
-            Map<String, Object> function = new LinkedHashMap<>();
+            Map<String, Object> function = new LinkedHashMap<>(4);
             function.put("name", tool.getName());
             function.put("description", tool.getDescription());
             function.put("parameters", tool.getParameters());
 
-            Map<String, Object> entry = new LinkedHashMap<>();
+            Map<String, Object> entry = new LinkedHashMap<>(2);
             entry.put("type", "function");
             entry.put("function", function);
             return entry;
@@ -210,10 +210,10 @@ public class ReActLoop {
     }
 
     /** 解析工具参数 JSON。 */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // JsonUtil.fromJson 返回 Map，泛型由调用上下文保证
     private Map<String, Object> parseArgs(String arguments) {
         if (arguments == null || arguments.isBlank()) {
-            return new HashMap<>();
+            return new HashMap<>(4);
         }
         return JsonUtil.fromJson(arguments, Map.class);
     }

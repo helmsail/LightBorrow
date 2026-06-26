@@ -47,42 +47,6 @@ public class RedisService {
         return stringRedisTemplate.getExpire(key);
     }
 
-    // ========== List 操作 ==========
-
-    public Long leftPush(String key, String value) {
-        return stringRedisTemplate.opsForList().leftPush(key, value);
-    }
-
-    public Long rightPush(String key, String value) {
-        return stringRedisTemplate.opsForList().rightPush(key, value);
-    }
-
-    public String leftPop(String key) {
-        return stringRedisTemplate.opsForList().leftPop(key);
-    }
-
-    public List<String> range(String key, long start, long end) {
-        return stringRedisTemplate.opsForList().range(key, start, end);
-    }
-
-    public Long listSize(String key) {
-        return stringRedisTemplate.opsForList().size(key);
-    }
-
-    public void trim(String key, long start, long end) {
-        stringRedisTemplate.opsForList().trim(key, start, end);
-    }
-
-    // ========== Hash 操作 ==========
-
-    public void hashSet(String key, String field, String value) {
-        stringRedisTemplate.opsForHash().put(key, field, value);
-    }
-
-    public Optional<String> hashGet(String key, String field) {
-        return Optional.ofNullable((String) stringRedisTemplate.opsForHash().get(key, field));
-    }
-
     // ========== 通用操作 ==========
 
     public Boolean delete(String key) {
@@ -91,9 +55,5 @@ public class RedisService {
 
     public Boolean hasKey(String key) {
         return stringRedisTemplate.hasKey(key);
-    }
-
-    public StringRedisTemplate getTemplate() {
-        return stringRedisTemplate;
     }
 }

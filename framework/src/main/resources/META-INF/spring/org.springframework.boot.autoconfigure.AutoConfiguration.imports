@@ -5,4 +5,3 @@ com.helmsail.lightborrow.framework.config.JacksonConfig
 com.helmsail.lightborrow.framework.config.IdAutoConfiguration
 com.helmsail.lightborrow.framework.config.AsyncConfig
 com.helmsail.lightborrow.framework.config.FrameworkAutoConfiguration
-com.helmsail.lightborrow.framework.mq.StreamConfig

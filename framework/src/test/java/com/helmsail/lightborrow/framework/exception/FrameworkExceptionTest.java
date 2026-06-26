@@ -9,9 +9,9 @@ class FrameworkExceptionTest {
 
     @Test
     void shouldCreateWithErrorCode() {
-        FrameworkException e = new FrameworkException(ErrorCode.REDIS_OPERATION_FAILED);
-        assertThat(e.getCode()).isEqualTo(400001);
-        assertThat(e.getMessage()).isEqualTo("Redis 操作失败");
+        FrameworkException e = new FrameworkException(ErrorCode.JSON_SERIALIZE_FAILED);
+        assertThat(e.getCode()).isEqualTo(400005);
+        assertThat(e.getMessage()).isEqualTo("JSON 序列化失败");
     }
 
     @Test
@@ -23,13 +23,13 @@ class FrameworkExceptionTest {
     @Test
     void shouldCreateWithErrorCodeAndCause() {
         Throwable cause = new RuntimeException("connection refused");
-        FrameworkException e = new FrameworkException(ErrorCode.REDIS_OPERATION_FAILED, cause);
+        FrameworkException e = new FrameworkException(ErrorCode.JSON_SERIALIZE_FAILED, cause);
         assertThat(e.getCause()).isSameAs(cause);
     }
 
     @Test
     void shouldBeInstanceOfBusinessException() {
-        FrameworkException e = new FrameworkException(ErrorCode.FRAMEWORK_ERROR);
+        FrameworkException e = new FrameworkException(ErrorCode.JSON_SERIALIZE_FAILED);
         assertThat(e).isInstanceOf(BusinessException.class);
     }
 }

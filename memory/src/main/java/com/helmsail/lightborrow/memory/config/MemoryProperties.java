@@ -14,7 +14,4 @@ public class MemoryProperties {
 
     /** 历史消息最大条数 */
     private int maxHistory = 20;
-
-    /** 会话超时时间（分钟） */
-    private int sessionTimeoutMinutes = 30;
 }

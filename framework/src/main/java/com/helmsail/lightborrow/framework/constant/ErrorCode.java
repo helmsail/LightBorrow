@@ -20,11 +20,6 @@ public enum ErrorCode {
     SYSTEM_ERROR(500000, "系统内部错误"),
 
     // === Framework 层 (400000-400999) ===
-    FRAMEWORK_ERROR(400000, "框架处理异常"),
-    REDIS_OPERATION_FAILED(400001, "Redis 操作失败"),
-    HTTP_REQUEST_FAILED(400002, "HTTP 请求失败"),
-    LOCK_ACQUISITION_FAILED(400003, "获取分布式锁失败"),
-    LOCK_ACQUISITION_TIMEOUT(400004, "获取分布式锁超时"),
     JSON_SERIALIZE_FAILED(400005, "JSON 序列化失败"),
     JSON_DESERIALIZE_FAILED(400006, "JSON 反序列化失败"),
     ID_GENERATION_FAILED(400007, "ID 生成失败"),
@@ -32,13 +27,9 @@ public enum ErrorCode {
 
     // === 业务通用 (400100-400999) ===
     BIZ_ERROR(400100, "业务处理失败"),
-    RESOURCE_NOT_FOUND(400101, "资源不存在"),
-    RESOURCE_ALREADY_EXISTS(400102, "资源已存在"),
-    OPERATION_NOT_ALLOWED(400103, "操作不允许"),
 
     // === AI 基础设施 (403000-403999) ===
     AI_API_CALL_FAILED(403000, "AI 服务调用失败"),
-    AI_RATE_LIMITED(403001, "AI 服务限流"),
     AI_EMBEDDING_FAILED(403002, "向量化失败"),
     AI_VECTOR_SEARCH_FAILED(403003, "向量检索失败"),
     AI_VECTOR_STORE_FAILED(403004, "向量存储失败"),
@@ -46,13 +37,9 @@ public enum ErrorCode {
     // === MCP (404000-404999) ===
     MCP_TOOL_NOT_FOUND(404000, "工具未找到"),
     MCP_TOOL_EXECUTION_FAILED(404001, "工具执行失败"),
-    MCP_TOOL_INVALID_PARAMS(404002, "工具参数校验失败"),
 
     // === RAG (405000-405999) ===
-    RAG_CHUNKING_FAILED(405000, "文档分块失败"),
-    RAG_LOAD_FAILED(405001, "文档加载失败"),
     RAG_RETRIEVAL_FAILED(405002, "获取文档失败"),
-    RAG_GENERATION_FAILED(405003, "生成失败"),
 
     // === Memory (406000-406999) ===
     MEMORY_SESSION_FAILED(406000, "会话加载失败"),
@@ -61,12 +48,10 @@ public enum ErrorCode {
 
     // === Core (407000-407999) ===
     CORE_REACT_MAX_STEPS(407000, "ReAct 循环达到最大步数"),
-    CORE_REWRITE_FAILED(407001, "输入重写失败"),
 
     // === Gateway (408000-408999) ===
     GATEWAY_RATE_LIMITED(408000, "请求过于频繁"),
     GATEWAY_CHANNEL_ERROR(408001, "渠道适配失败"),
-    GATEWAY_MESSAGE_FORMAT_ERROR(408002, "消息格式错误"),
     ;
 
     private final int code;

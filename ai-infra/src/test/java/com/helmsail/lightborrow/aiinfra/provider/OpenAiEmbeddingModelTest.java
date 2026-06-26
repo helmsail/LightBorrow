@@ -1,35 +1,73 @@
 package com.helmsail.lightborrow.aiinfra.provider;
 
-import com.helmsail.lightborrow.aiinfra.exception.AiException;
+import com.helmsail.lightborrow.aiinfra.config.AiProperties;
+import com.helmsail.lightborrow.aiinfra.model.EmbeddingResponse;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * OpenAiEmbeddingModel 单元测试。
- * 实际 HTTP 调用和重试熔断由集成测试覆盖。
- */
 class OpenAiEmbeddingModelTest {
 
     @Test
-    void shouldCreateInstanceWithDefaultConfig() {
+    void shouldCreateInstance() {
         var retryRegistry = RetryRegistry.of(RetryConfig.custom()
                 .maxAttempts(1).retryExceptions(RuntimeException.class).build());
         var cbRegistry = CircuitBreakerRegistry.of(CircuitBreakerConfig.custom()
                 .slidingWindowSize(10).failureRateThreshold(100).build());
 
-        var properties = new com.helmsail.lightborrow.aiinfra.config.AiProperties.EmbeddingProperties();
+        var properties = new AiProperties.EmbeddingProperties();
         properties.setBaseUrl("https://api.test.com");
         properties.setApiKey("test-key");
 
         var model = new OpenAiEmbeddingModel(
-                org.springframework.web.client.RestClient.create(),
-                properties, retryRegistry, cbRegistry);
+                RestClient.create(), properties, retryRegistry, cbRegistry);
 
         assertThat(model).isNotNull();
+    }
+
+    @Test
+    void embeddingResponseShouldReturnEmbeddingFromFirstData() {
+        var data = new EmbeddingResponse.EmbeddingData(0, new float[]{0.1f, 0.2f, 0.3f});
+        var response = new EmbeddingResponse(List.of(data), null);
+
+        float[] embedding = response.embedding();
+        assertThat(embedding).containsExactly(0.1f, 0.2f, 0.3f);
+    }
+
+    @Test
+    void embeddingResponseShouldReturnEmptyForNullData() {
+        var response = new EmbeddingResponse(null, null);
+        assertThat(response.embedding()).isEmpty();
+    }
+
+    @Test
+    void embeddingResponseShouldReturnEmptyForEmptyData() {
+        var response = new EmbeddingResponse(List.of(), null);
+        assertThat(response.embedding()).isEmpty();
+    }
+
+    @Test
+    void embeddingResponseShouldReturnEmbeddingsList() {
+        var data1 = new EmbeddingResponse.EmbeddingData(0, new float[]{0.1f});
+        var data2 = new EmbeddingResponse.EmbeddingData(1, new float[]{0.2f});
+        var response = new EmbeddingResponse(List.of(data1, data2), null);
+
+        List<float[]> embeddings = response.embeddings();
+        assertThat(embeddings).hasSize(2);
+        assertThat(embeddings.get(0)).containsExactly(0.1f);
+        assertThat(embeddings.get(1)).containsExactly(0.2f);
+    }
+
+    @Test
+    void embeddingResponseShouldReturnEmptyEmbeddingsForNullData() {
+        var response = new EmbeddingResponse(null, null);
+        assertThat(response.embeddings()).isEmpty();
     }
 }

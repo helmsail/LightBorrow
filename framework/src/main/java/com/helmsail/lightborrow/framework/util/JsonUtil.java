@@ -44,7 +44,7 @@ public final class JsonUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // TypeReference 泛型擦除，类型安全由调用方保证
     public static <T> T fromJson(String json, TypeReference<T> typeRef) {
         try {
             return objectMapper.readValue(json, typeRef);

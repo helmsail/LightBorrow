@@ -8,16 +8,13 @@ import com.helmsail.lightborrow.gateway.exception.GatewayException;
 import com.helmsail.lightborrow.gateway.ratelimit.GatewayRateLimiter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -46,7 +43,7 @@ public class WebhookFilter implements Filter {
     public WebhookFilter(List<ChannelAdapter> adapters,
                          GatewayRateLimiter rateLimiter,
                          ObjectMapper objectMapper) {
-        this.adapterMap = new HashMap<>();
+        this.adapterMap = new HashMap<>(adapters.size());
         for (ChannelAdapter adapter : adapters) {
             this.adapterMap.put(adapter.getChannel(), adapter);
         }
@@ -106,7 +103,7 @@ public class WebhookFilter implements Filter {
     }
 
     private Map<String, String> extractHeaders(HttpServletRequest request) {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> headers = new HashMap<>(16);
         Enumeration<String> names = request.getHeaderNames();
         while (names.hasMoreElements()) {
             String name = names.nextElement();
