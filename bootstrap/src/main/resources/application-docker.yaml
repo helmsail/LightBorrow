@@ -1,11 +1,12 @@
 # Docker 本地开发配置（PostgreSQL + Redis 全部通过 Docker 运行）
 # 企业级标准：所有基础服务使用 Docker，本地开发零模拟
+# 注意：API Key 通过环境变量注入，参考 .env.example
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/lightborrow
     driver-class-name: org.postgresql.Driver
     username: postgres
-    password: lightborrow
+    password: ${PG_PASSWORD:lightborrow}
   sql:
     init:
       mode: always
@@ -14,15 +15,15 @@ spring:
       host: localhost
       port: 6379
 
-# AI 配置
+# AI 配置（API Key 从环境变量读取）
 ai:
   llm:
     base-url: https://api.deepseek.com
-    api-key: ***REMOVED***
+    api-key: ${DEEPSEEK_API_KEY:}
     model: deepseek-v4-flash
   embedding:
     base-url: https://ws-zdcu16di9b598nny.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
-    api-key: ***REMOVED***
+    api-key: ${EMBEDDING_API_KEY:}
     model: text-embedding-v3
   vector:
     enabled: false

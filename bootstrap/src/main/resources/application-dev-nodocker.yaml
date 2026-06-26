@@ -1,5 +1,6 @@
 # 无 Docker 本地开发配置（H2 内存数据库 + 本地限流）
 # 适用于没有 Docker 环境时快速启动后端
+# 注意：API Key 通过环境变量注入，参考 .env.example
 spring:
   main:
     allow-circular-references: true
@@ -16,15 +17,15 @@ spring:
       enabled: true
       path: /h2-console
 
-# AI 配置
+# AI 配置（API Key 从环境变量读取）
 ai:
   llm:
     base-url: https://api.deepseek.com
-    api-key: ***REMOVED***
+    api-key: ${DEEPSEEK_API_KEY:}
     model: deepseek-v4-flash
   embedding:
     base-url: https://ws-zdcu16di9b598nny.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
-    api-key: ***REMOVED***
+    api-key: ${EMBEDDING_API_KEY:}
     model: text-embedding-v3
   vector:
     enabled: false
