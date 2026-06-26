@@ -42,6 +42,9 @@ build/
 .env
 .env.*
 
+# 但允许提交 .env.example 作为模板
+!.env.example
+
 # 本地启动脚本
 env.*.bat
 env.*.sh
