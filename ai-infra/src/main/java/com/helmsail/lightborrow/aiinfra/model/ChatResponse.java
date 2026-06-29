@@ -22,6 +22,16 @@ public record ChatResponse(
         return msg != null ? msg.content() : null;
     }
 
+    public String finishReason() {
+        if (choices == null || choices.isEmpty()) return null;
+        return choices.get(0).finishReason();
+    }
+
+    public boolean hasToolCalls() {
+        List<ChatMessage.ToolCall> calls = toolCalls();
+        return calls != null && !calls.isEmpty();
+    }
+
     public List<ChatMessage.ToolCall> toolCalls() {
         if (choices == null || choices.isEmpty()) return null;
         Message msg = choices.get(0).message();

@@ -3,9 +3,7 @@ package com.helmsail.lightborrow.mcp.exception;
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.BusinessException;
 
-/**
- * MCP 模块异常。错误码范围 404000-404999。
- */
+/** 错误码范围 404000-404999。 */
 public class McpException extends BusinessException {
 
     private static final long serialVersionUID = 1L;

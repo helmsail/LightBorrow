@@ -3,6 +3,7 @@ package com.helmsail.lightborrow.rag.exception;
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.BusinessException;
 
+/** 错误码范围 405000-405999。 */
 public class RagException extends BusinessException {
 
     private static final long serialVersionUID = 1L;

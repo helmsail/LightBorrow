@@ -5,40 +5,27 @@ import lombok.Getter;
 @Getter
 public class AgentResult {
 
-    /** 消息类型：final / question / confirm / error */
-    private final String type;
+    private final AgentResultType type;
     private final String content;
 
-    private AgentResult(String type, String content) {
+    private AgentResult(AgentResultType type, String content) {
         this.type = type;
         this.content = content;
     }
 
     public static AgentResult finalAnswer(String content) {
-        return new AgentResult("final", content);
+        return new AgentResult(AgentResultType.FINAL_ANSWER, content);
     }
 
     public static AgentResult question(String content) {
-        return new AgentResult("question", content);
+        return new AgentResult(AgentResultType.QUESTION, content);
     }
 
     public static AgentResult confirm(String content) {
-        return new AgentResult("confirm", content);
+        return new AgentResult(AgentResultType.CONFIRM, content);
     }
 
     public static AgentResult error(String content) {
-        return new AgentResult("error", content);
-    }
-
-    public boolean isFinal() {
-        return "final".equals(type);
-    }
-
-    public boolean isQuestion() {
-        return "question".equals(type);
-    }
-
-    public boolean isConfirm() {
-        return "confirm".equals(type);
+        return new AgentResult(AgentResultType.ERROR, content);
     }
 }

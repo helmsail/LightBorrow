@@ -43,13 +43,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Apache Commons Pool2 (Lettuce 连接池，仅当使用 Spring Data Redis 时需要) -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Redisson Spring Boot Starter (分布式锁, 看门狗自动续期) -->
         <dependency>
             <groupId>org.redisson</groupId>
@@ -57,18 +50,14 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Resilience4j Spring Boot 3 Starter (熔断/重试/限流) -->
+        <!-- Sentinel 限流熔断 -->
         <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
-            <optional>true</optional>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-core</artifactId>
         </dependency>
-
-        <!-- Spring AOP (Resilience4j 注解需要) -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-            <optional>true</optional>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-parameter-flow-control</artifactId>
         </dependency>
 
         <!-- Spring Boot Actuator (健康检查 / 指标暴露) -->

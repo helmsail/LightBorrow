@@ -3,10 +3,7 @@ package com.helmsail.lightborrow.memory.pipeline;
 import com.helmsail.lightborrow.memory.model.MemoryContext;
 
 /**
- * 记忆阶段接口。每个 MemoryStage 负责从特定数据源加载/保存一部分记忆。
- * <p>
- * Pipeline 模式：load 顺序执行（Session → History → Profile），save 逆序执行。
- * </p>
+ * Pipeline 模式：load 顺序执行，save 逆序执行。
  */
 public interface MemoryStage {
 

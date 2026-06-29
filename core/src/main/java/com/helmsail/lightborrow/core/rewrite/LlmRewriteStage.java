@@ -11,23 +11,27 @@ import java.util.List;
 @Slf4j
 public class LlmRewriteStage implements RewriteStage {
 
-    private static final String SYSTEM_PROMPT = """
-            你是一个对话输入重写助手。根据对话历史，将用户的最新输入重写为一个完整、独立的问题/请求，消除指代歧义。
-            直接输出重写后的文本，不要任何前缀、引号或解释。如果输入已完整且无歧义，保持原样输出。
-            """;
+    private static final String REWRITE_PROMPT_PATH = "prompts/rewrite-prompt.md";
 
     private final ChatModel chatModel;
+    private final PromptTemplateService promptTemplateService;
 
-    public LlmRewriteStage(ChatModel chatModel) {
+    public LlmRewriteStage(ChatModel chatModel, PromptTemplateService promptTemplateService) {
         this.chatModel = chatModel;
+        this.promptTemplateService = promptTemplateService;
     }
 
     @Override
     public void rewrite(ConversationContext ctx) {
+        // 如果 RuleRewriteStage 判定不需要 LLM 重写，直接跳过
+        if (!ctx.isRequireRewrite()) {
+            log.debug("[Core] LlmRewriteStage: 规则判定跳过重写");
+            return;
+        }
+
         String input = ctx.getRewrittenInput() != null
                 ? ctx.getRewrittenInput() : ctx.getUserInput();
 
-        // 如果历史对话为空，无需重写
         if (ctx.getMemoryContext() == null
                 || ctx.getMemoryContext().getHistoryMessages() == null
                 || ctx.getMemoryContext().getHistoryMessages().isEmpty()) {
@@ -35,16 +39,18 @@ public class LlmRewriteStage implements RewriteStage {
             return;
         }
 
-        // 构建历史上下文
         StringBuilder history = new StringBuilder("## 对话历史\n");
         for (String msg : ctx.getMemoryContext().getHistoryMessages()) {
             history.append(msg).append("\n");
         }
 
+        String systemPrompt = promptTemplateService.getRaw(REWRITE_PROMPT_PATH)
+                + "\n\n" + history;
+
         ChatRequest request = ChatRequest.builder()
                 .model(null)
                 .messages(List.of(
-                        ChatMessage.system(SYSTEM_PROMPT + "\n\n" + history),
+                        ChatMessage.system(systemPrompt),
                         ChatMessage.user("请重写：" + input)))
                 .temperature(0.1)
                 .maxTokens(256)

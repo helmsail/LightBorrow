@@ -12,10 +12,7 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-      - com.helmsail.lightborrow.mcp.config.McpAutoConfiguration
-      - com.helmsail.lightborrow.memory.config.MemoryAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - com.helmsail.lightborrow.framework.config.RedisConfig
       - com.helmsail.lightborrow.rag.config.RagAutoConfiguration
-      - com.helmsail.lightborrow.core.config.CoreAutoConfiguration
-      - com.helmsail.lightborrow.gateway.config.GatewayAutoConfiguration

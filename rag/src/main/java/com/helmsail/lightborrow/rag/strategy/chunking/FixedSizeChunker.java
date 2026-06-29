@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -15,10 +16,11 @@ public class FixedSizeChunker implements ChunkingStrategy {
     private static final Pattern SENTENCE_BOUNDARY = Pattern.compile("[。！？.!?\\n]");
     private static final int MAX_LOOKBACK = 50;
 
-    private int chunkSize;
-    private int overlap;
+    private final int chunkSize;
+    private final int overlap;
 
     public FixedSizeChunker(RagProperties ragProperties) {
+        // 允许 null 参数，测试中明确验证了 null 场景下的默认值行为
         this.chunkSize = ragProperties != null ? ragProperties.getChunkSize() : 500;
         this.overlap = ragProperties != null ? ragProperties.getOverlap() : 50;
     }
@@ -70,7 +72,7 @@ public class FixedSizeChunker implements ChunkingStrategy {
     private int findLastSentenceBoundary(String content, int end) {
         int searchStart = Math.max(0, end - MAX_LOOKBACK);
         String lookback = content.substring(searchStart, end);
-        java.util.regex.Matcher matcher = SENTENCE_BOUNDARY.matcher(lookback);
+        Matcher matcher = SENTENCE_BOUNDARY.matcher(lookback);
         int lastBoundary = -1;
         while (matcher.find()) {
             lastBoundary = matcher.start();

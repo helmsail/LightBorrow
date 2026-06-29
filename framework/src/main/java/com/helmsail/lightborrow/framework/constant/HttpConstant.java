@@ -1,8 +1,5 @@
 package com.helmsail.lightborrow.framework.constant;
 
-/**
- * HTTP 相关常量。
- */
 public final class HttpConstant {
 
     private HttpConstant() {

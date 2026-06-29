@@ -2,10 +2,6 @@ package com.helmsail.lightborrow.aiinfra.provider;
 
 import com.helmsail.lightborrow.aiinfra.config.AiProperties;
 import com.helmsail.lightborrow.aiinfra.model.EmbeddingResponse;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.retry.RetryConfig;
-import io.github.resilience4j.retry.RetryRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
@@ -17,17 +13,11 @@ class OpenAiEmbeddingModelTest {
 
     @Test
     void shouldCreateInstance() {
-        var retryRegistry = RetryRegistry.of(RetryConfig.custom()
-                .maxAttempts(1).retryExceptions(RuntimeException.class).build());
-        var cbRegistry = CircuitBreakerRegistry.of(CircuitBreakerConfig.custom()
-                .slidingWindowSize(10).failureRateThreshold(100).build());
-
         var properties = new AiProperties.EmbeddingProperties();
         properties.setBaseUrl("https://api.test.com");
         properties.setApiKey("test-key");
 
-        var model = new OpenAiEmbeddingModel(
-                RestClient.create(), properties, retryRegistry, cbRegistry);
+        var model = new OpenAiEmbeddingModel(RestClient.create(), properties);
 
         assertThat(model).isNotNull();
     }

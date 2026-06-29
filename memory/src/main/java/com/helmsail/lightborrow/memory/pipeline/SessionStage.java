@@ -26,6 +26,16 @@ public class SessionStage implements MemoryStage {
 
     @Override
     public void load(MemoryContext ctx) {
+        if (stringRedisTemplate == null) {
+            ctx.setNewSession(true);
+            ctx.setSessionState(SessionState.builder()
+                    .userId(ctx.getUserId())
+                    .status("ACTIVE")
+                    .createdAt(System.currentTimeMillis())
+                    .lastAccessAt(System.currentTimeMillis())
+                    .build());
+            return;
+        }
         try {
             String key = SESSION_KEY_PREFIX + ctx.getUserId();
             Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(key);
@@ -55,6 +65,7 @@ public class SessionStage implements MemoryStage {
 
     @Override
     public void save(MemoryContext ctx) {
+        if (stringRedisTemplate == null) return;
         try {
             SessionState state = ctx.getSessionState();
             if (state == null) return;

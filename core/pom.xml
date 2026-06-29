@@ -19,6 +19,12 @@
     <dependencies>
         <dependency>
             <groupId>com.helmsail</groupId>
+            <artifactId>lightborrow-framework</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.helmsail</groupId>
             <artifactId>lightborrow-ai-infra</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -32,12 +38,6 @@
         <dependency>
             <groupId>com.helmsail</groupId>
             <artifactId>lightborrow-memory</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.helmsail</groupId>
-            <artifactId>lightborrow-rag</artifactId>
             <version>${project.version}</version>
         </dependency>
 

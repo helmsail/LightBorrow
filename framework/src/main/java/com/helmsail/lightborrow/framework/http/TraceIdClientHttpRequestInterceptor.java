@@ -10,9 +10,7 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 
-/**
- * RestClient 拦截器：自动透传 traceId 到下游服务。
- */
+/** 自动透传 traceId 到下游服务。 */
 @Slf4j
 public class TraceIdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 

@@ -3,10 +3,6 @@ package com.helmsail.lightborrow.framework.exception;
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import lombok.Getter;
 
-/**
- * 业务异常基类。封装 ErrorCode。
- * 各模块继承此基类定义特定异常。
- */
 @Getter
 public class BusinessException extends RuntimeException {
 
@@ -21,12 +17,12 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode errorCode, Object... args) {
-        super(errorCode.getMessage(args));
+        super(errorCode.formatMessage(args));
         this.code = errorCode.getCode();
     }
 
     public BusinessException(ErrorCode errorCode, Throwable cause, Object... args) {
-        super(errorCode.getMessage(args), cause);
+        super(errorCode.formatMessage(args), cause);
         this.code = errorCode.getCode();
     }
 }

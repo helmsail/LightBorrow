@@ -4,7 +4,6 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.mcp.annotation.McpParam;
 import com.helmsail.lightborrow.mcp.annotation.McpTool;
 import com.helmsail.lightborrow.mcp.exception.McpException;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.context.ApplicationContext;
@@ -13,12 +12,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 工具注册中心。扫描 {@link McpTool} 注解的方法，提供注册、查找、调用能力。
- */
+/** 扫描 {@link McpTool} 注解的方法，提供注册、查找、调用能力。 */
 @Slf4j
 public class ToolRegistry {
 
@@ -59,7 +59,6 @@ public class ToolRegistry {
 
         ToolDefinition.ToolExecutor executor = args -> {
             try {
-                method.setAccessible(true);
                 if (method.getParameterCount() == 1
                         && method.getParameterTypes()[0] == String.class) {
                     Object result = method.invoke(bean, args != null && !args.isEmpty()

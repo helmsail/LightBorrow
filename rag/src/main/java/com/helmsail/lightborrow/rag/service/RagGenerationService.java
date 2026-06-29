@@ -20,32 +20,27 @@ public class RagGenerationService {
     /**
      * 基于检索结果生成回答。
      *
-     * @param query    用户原始查询
-     * @param chunks   检索到的相关文档块
+     * @param query               用户原始查询
+     * @param chunks              检索到的相关文档块
+     * @param citedContext        带引文的上下文
+     * @param citationInstruction 引文要求
      * @return 生成的回答
      */
-    public String generate(String query, List<DocumentChunk> chunks) {
+    public String generate(String query, List<DocumentChunk> chunks,
+                           String citedContext, String citationInstruction) {
         if (chunks == null || chunks.isEmpty()) {
             return "未找到相关知识。";
         }
 
-        // 构建上下文
-        StringBuilder context = new StringBuilder();
-        for (int i = 0; i < chunks.size(); i++) {
-            context.append("[").append(i + 1).append("] ")
-                    .append(chunks.get(i).getContent()).append("\n\n");
-        }
-
-        // 调用 LLM 生成回答
-        String systemPrompt = String.format(
-                """
+        String systemPrompt = String.format("""
                 你是一个知识库助手。请基于以下提供的参考资料回答用户的问题。
                 如果参考资料不足以回答，请如实告知。
                 请用中文回答，保持简洁准确。
 
                 参考资料：
-%s""",
-                context);
+                %s
+
+                %s""", citedContext, citationInstruction);
 
         ChatRequest request = ChatRequest.builder()
                 .model(null)

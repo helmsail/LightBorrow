@@ -7,10 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
+import java.util.List;
 
-/**
- * HTTP 客户端配置属性。
- */
 @Getter
 @Setter
 @ToString
@@ -18,9 +16,10 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "lightborrow.http")
 public class HttpProperties {
 
-    /** 连接超时 */
     private Duration connectTimeout = Duration.ofSeconds(5);
 
-    /** 读取超时 */
     private Duration readTimeout = Duration.ofSeconds(10);
+
+    /** 生产环境需显式配置允许的跨域来源 */
+    private List<String> allowedOrigins = List.of();
 }

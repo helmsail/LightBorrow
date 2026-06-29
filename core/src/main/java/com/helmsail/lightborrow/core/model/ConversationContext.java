@@ -51,6 +51,12 @@ public class ConversationContext {
     /** 待确认的内容 */
     private String pendingConfirmSummary;
 
+    /** 是否需要 LLM 重写（由 RuleRewriteStage 设置） */
+    private boolean requireRewrite = true;
+
+    /** 长期记忆（由 LongTermMemoryService 检索注入） */
+    private List<String> longTermMemories;
+
     public ConversationContext(String userId, String userInput) {
         this.userId = userId;
         this.userInput = userInput;

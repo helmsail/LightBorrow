@@ -6,7 +6,10 @@ import com.helmsail.lightborrow.core.rewrite.RewritePipeline;
 import com.helmsail.lightborrow.framework.util.JsonUtil;
 import com.helmsail.lightborrow.memory.model.MemoryContext;
 import com.helmsail.lightborrow.memory.pipeline.MemoryPipeline;
+import com.helmsail.lightborrow.memory.service.LongTermMemoryService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 public class AgentLoop {
@@ -14,62 +17,96 @@ public class AgentLoop {
     private final MemoryPipeline memoryPipeline;
     private final RewritePipeline rewritePipeline;
     private final ReActLoop reActLoop;
+    private final InputGuardFilter inputGuardFilter;
+    private final MemoryExtractor memoryExtractor;
+    private final LongTermMemoryService longTermMemoryService;
 
     public AgentLoop(MemoryPipeline memoryPipeline,
                      RewritePipeline rewritePipeline,
-                     ReActLoop reActLoop) {
+                     ReActLoop reActLoop,
+                     InputGuardFilter inputGuardFilter,
+                     MemoryExtractor memoryExtractor,
+                     LongTermMemoryService longTermMemoryService) {
         this.memoryPipeline = memoryPipeline;
         this.rewritePipeline = rewritePipeline;
         this.reActLoop = reActLoop;
+        this.inputGuardFilter = inputGuardFilter;
+        this.memoryExtractor = memoryExtractor;
+        this.longTermMemoryService = longTermMemoryService;
     }
 
-    /**
-     * 处理用户消息。
-     *
-     * @param userId  用户 ID
-     * @param content 用户消息内容
-     * @return 处理结果
-     */
-    public AgentResult process(String userId, String content) {
-        log.info("[Agent] 开始处理 userId={}, content={}", userId, content);
-        ConversationContext ctx = new ConversationContext(userId, content);
+    public AgentResult process(String userId, String sessionId, String content) {
+        return process(userId, sessionId, content, null);
+    }
+
+    public AgentResult process(String userId, String sessionId, String content,
+                               java.util.function.Consumer<String> progressCallback) {
+        log.info("[Agent] 开始处理 userId={}, sessionId={}", userId, sessionId);
+        long startTime = System.currentTimeMillis();
+
+        // ========== 输入安全检查 ==========
+        InputGuardFilter.GuardResult guardResult = inputGuardFilter.check(content);
+        if (!guardResult.passed()) {
+            log.warn("[Agent] 输入安全检查未通过 userId={}, reason={}", userId, guardResult.rejectReason());
+            return AgentResult.error(guardResult.rejectReason());
+        }
+        String safeContent = guardResult.sanitizedInput();
+
+        ConversationContext ctx = new ConversationContext(userId, safeContent);
 
         try {
-            // Step 1: 加载记忆
-            MemoryContext memoryCtx = memoryPipeline.load(userId);
+            if (progressCallback != null) progressCallback.accept("正在加载记忆...");
+            MemoryContext memoryCtx = memoryPipeline.load(userId, sessionId);
             ctx.setMemoryContext(memoryCtx);
 
-            // Step 2: 输入重写
+            // ========== 加载长期记忆 ==========
+            if (longTermMemoryService != null && memoryExtractor != null) {
+                List<String> memories = longTermMemoryService.retrieve(userId, safeContent);
+                if (!memories.isEmpty()) {
+                    ctx.setLongTermMemories(memories);
+                    log.info("[Agent] 加载长期记忆 {} 条 userId={}", memories.size(), userId);
+                }
+            }
+
+            if (progressCallback != null) progressCallback.accept("正在理解你的问题...");
             rewritePipeline.execute(ctx);
 
-            // Step 3: ReAct 循环
+            if (progressCallback != null) progressCallback.accept("正在思考处理方案...");
             reActLoop.execute(ctx);
 
-            // Step 4: 保存记忆
+            if (progressCallback != null) progressCallback.accept("正在保存记录...");
             memoryPipeline.save(memoryCtx);
+            saveConversationHistory(ctx, sessionId);
 
-            // 保存对话历史
-            saveConversationHistory(ctx);
+            // Token 用量追踪：记录每次 Agent 处理的总消耗
+            long durationMs = System.currentTimeMillis() - startTime;
+            int totalMessages = ctx.getMessages().size();
+            log.info("[Agent] 处理完成 userId={}, durationMs={}, messages={}",
+                    userId, durationMs, totalMessages);
 
-            // Step 5: 构建结果
-            return buildResult(ctx);
+            AgentResult result = buildResult(ctx);
+            if (progressCallback != null) {
+                String msg = result.getType() == AgentResultType.ERROR
+                        ? "处理出错: " + result.getContent()
+                        : result.getContent();
+                progressCallback.accept(msg);
+            }
+            return result;
 
         } catch (Exception e) {
             log.error("[Agent] 处理失败 userId={}", userId, e);
-            return AgentResult.error("系统处理失败，请稍后再试。");
+            AgentResult err = AgentResult.error("系统处理失败，请稍后再试。");
+            if (progressCallback != null) progressCallback.accept(err.getContent());
+            return err;
         }
     }
 
-    /** 保存对话历史。 */
-    private void saveConversationHistory(ConversationContext ctx) {
+    private void saveConversationHistory(ConversationContext ctx, String sessionId) {
         try {
-            // 保存用户消息
-            memoryPipeline.appendHistory(ctx.getUserId(),
+            memoryPipeline.appendHistory(ctx.getUserId(), sessionId,
                     JsonUtil.toJson(ChatMessage.user(ctx.getUserInput())));
-
-            // 保存助手消息
             if (ctx.getFinalAnswer() != null) {
-                memoryPipeline.appendHistory(ctx.getUserId(),
+                memoryPipeline.appendHistory(ctx.getUserId(), sessionId,
                         JsonUtil.toJson(ChatMessage.assistant(ctx.getFinalAnswer())));
             }
         } catch (Exception e) {
@@ -77,7 +114,6 @@ public class AgentLoop {
         }
     }
 
-    /** 构建 Agent 处理结果。 */
     private AgentResult buildResult(ConversationContext ctx) {
         if (ctx.isAwaitingUser()) {
             return AgentResult.question(ctx.getPendingQuestion());

@@ -2,9 +2,7 @@ package com.helmsail.lightborrow.aiinfra.vector;
 
 import java.util.List;
 
-/**
- * 向量存储接口。支持向量的增删和相似度检索。
- */
+/** 支持向量的增删和相似度检索。 */
 public interface VectorStore {
 
     void upsert(VectorDocument document);

@@ -50,7 +50,7 @@ class MemoryContextTest {
     @Test
     void allArgsConstructorShouldSetFields() {
         SessionState session = SessionState.builder().build();
-        MemoryContext ctx = new MemoryContext("user3", session, List.of("hi"), "profile", true);
+        MemoryContext ctx = new MemoryContext("user3", null, session, List.of("hi"), "profile", true);
 
         assertThat(ctx.getUserId()).isEqualTo("user3");
         assertThat(ctx.getSessionState()).isSameAs(session);

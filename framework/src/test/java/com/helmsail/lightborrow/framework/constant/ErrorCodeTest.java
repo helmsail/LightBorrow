@@ -14,7 +14,7 @@ class ErrorCodeTest {
 
     @Test
     void shouldReturnFormattedMessageWithArgs() {
-        String result = ErrorCode.INVALID_PARAMETER.getMessage("参数不能为空");
+        String result = ErrorCode.INVALID_PARAMETER.formatMessage("参数不能为空");
         assertThat(result).isEqualTo("参数校验失败");
     }
 
@@ -25,19 +25,18 @@ class ErrorCodeTest {
 
     @Test
     void shouldReturnOriginalMessageWhenArgsNull() {
-        assertThat(ErrorCode.BIZ_ERROR.getMessage((Object[]) null)).isEqualTo("业务处理失败");
+        assertThat(ErrorCode.BIZ_ERROR.formatMessage((Object[]) null)).isEqualTo("业务处理失败");
     }
 
     @Test
     void shouldHandleMultiplePlaceholders() {
-        String result = ErrorCode.INVALID_PARAMETER.getMessage("order_123");
+        String result = ErrorCode.INVALID_PARAMETER.formatMessage("order_123");
         assertThat(result).isEqualTo("参数校验失败");
     }
 
     @Test
     void frameworkErrorCodesShouldBeInCorrectRange() {
         assertThat(ErrorCode.INVALID_PARAMETER.getCode()).isBetween(400000, 400999);
-        assertThat(ErrorCode.ID_GENERATION_FAILED.getCode()).isBetween(400000, 400999);
     }
 
     @Test

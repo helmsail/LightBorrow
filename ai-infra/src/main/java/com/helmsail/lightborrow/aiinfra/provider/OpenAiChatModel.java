@@ -1,33 +1,21 @@
 package com.helmsail.lightborrow.aiinfra.provider;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
 import com.helmsail.lightborrow.aiinfra.config.AiProperties;
-import com.helmsail.lightborrow.aiinfra.config.Resilience4jConfig;
 import com.helmsail.lightborrow.aiinfra.exception.AiException;
 import com.helmsail.lightborrow.aiinfra.llm.ChatModel;
 import com.helmsail.lightborrow.aiinfra.model.ChatRequest;
 import com.helmsail.lightborrow.aiinfra.model.ChatResponse;
-import com.helmsail.lightborrow.aiinfra.model.ChatResponseChunk;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryRegistry;
+import com.helmsail.lightborrow.framework.sentinel.SentinelAutoConfiguration;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.util.retry.RetrySpec;
-
-import java.time.Duration;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 import static com.helmsail.lightborrow.framework.constant.ErrorCode.AI_API_CALL_FAILED;
 
 /**
- * OpenAI 兼容聊天模型实现（如 DeepSeek）。
- * 同步调用使用 RestClient + Resilience4j 重试熔断，流式调用使用 WebClient SSE + Reactor 重试。
+ * OpenAI 兼容实现（如 DeepSeek）。
+ * 使用 RestClient + Sentinel 熔断。
  */
 @Slf4j
 public class OpenAiChatModel implements ChatModel {
@@ -35,51 +23,25 @@ public class OpenAiChatModel implements ChatModel {
     private static final String CHAT_PATH = "/chat/completions";
 
     private final RestClient restClient;
-    private final WebClient webClient;
     private final AiProperties.LlmProperties properties;
-    private final ObjectMapper objectMapper;
-    private final Retry retry;
-    private final CircuitBreaker circuitBreaker;
 
-    public OpenAiChatModel(RestClient restClient, WebClient webClient,
-                           AiProperties.LlmProperties properties,
-                           ObjectMapper objectMapper,
-                           RetryRegistry retryRegistry,
-                           CircuitBreakerRegistry cbRegistry) {
+    public OpenAiChatModel(RestClient restClient,
+                           AiProperties.LlmProperties properties) {
         this.restClient = restClient;
-        this.webClient = webClient;
         this.properties = properties;
-        this.objectMapper = objectMapper;
-        this.retry = retryRegistry.retry(Resilience4jConfig.RETRY_AI);
-        this.circuitBreaker = cbRegistry.circuitBreaker(Resilience4jConfig.CB_AI);
     }
 
     @Override
     public ChatResponse chat(ChatRequest request) {
         ChatRequest finalRequest = withDefaults(request, false);
-        Supplier<ChatResponse> supplier = CircuitBreaker.decorateSupplier(circuitBreaker,
-                Retry.decorateSupplier(retry, () -> doChat(finalRequest)));
-        try {
-            return supplier.get();
+        try (Entry entry = SphU.entry(SentinelAutoConfiguration.RESOURCE_LLM_CHAT)) {
+            ChatResponse response = doChat(finalRequest);
+            return response;
+        } catch (AiException e) {
+            throw e;
         } catch (Exception e) {
             throw new AiException(AI_API_CALL_FAILED, e, properties.getModel());
         }
-    }
-
-    @Override
-    public Flux<ChatResponseChunk> stream(ChatRequest request) {
-        ChatRequest finalRequest = withDefaults(request, true);
-
-        // 流式调用：检查熔断状态，使用 Reactor 重试
-        if (!circuitBreaker.tryAcquirePermission()) {
-            log.warn("[AI] CircuitBreaker OPEN，流式调用被拒绝 model={}", properties.getModel());
-            return Flux.error(new AiException(AI_API_CALL_FAILED, properties.getModel() + " 服务熔断中"));
-        }
-
-        return doStream(finalRequest)
-                .retryWhen(RetrySpec.backoff(3, Duration.ofSeconds(1))
-                        .onRetryExhaustedThrow((spec, signal) ->
-                                new AiException(AI_API_CALL_FAILED, "流式调用重试耗尽")));
     }
 
     private ChatResponse doChat(ChatRequest request) {
@@ -93,28 +55,6 @@ public class OpenAiChatModel implements ChatModel {
             throw new AiException(AI_API_CALL_FAILED, "LLM returned null response");
         }
         return response;
-    }
-
-    private Flux<ChatResponseChunk> doStream(ChatRequest request) {
-        log.debug("Calling LLM stream: model={}", request.model());
-        return webClient.post()
-                .uri(CHAT_PATH)
-                .bodyValue(request)
-                .accept(MediaType.TEXT_EVENT_STREAM)
-                .retrieve()
-                .bodyToFlux(String.class)
-                .filter(line -> line.startsWith("data: "))
-                .map(line -> {
-                    String json = line.substring(6).trim();
-                    if ("[DONE]".equals(json)) return null;
-                    try {
-                        return objectMapper.readValue(json, ChatResponseChunk.class);
-                    } catch (Exception e) {
-                        log.warn("Failed to parse SSE chunk: {}", json, e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull);
     }
 
     private ChatRequest withDefaults(ChatRequest original, boolean stream) {

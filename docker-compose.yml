@@ -1,5 +1,7 @@
-version: "3.9"
-
+# ============================================================================
+# LightBorrow 全栈本地开发环境
+# 一条命令启动全部服务：docker compose up -d
+# ============================================================================
 services:
   # PostgreSQL 数据库
   postgres:
@@ -9,18 +11,14 @@ services:
     environment:
       POSTGRES_DB: lightborrow
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: lightborrow
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-lightborrow}
     ports:
       - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - lightborrow-net
 
   # Redis 缓存与状态存储
   redis:
@@ -29,22 +27,28 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - lightborrow-net
 
-volumes:
-  postgres-data:
-    driver: local
-  redis-data:
-    driver: local
-
-networks:
-  lightborrow-net:
-    driver: bridge
+  # 应用服务（含前端静态资源）
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lightborrow-app
+    ports:
+      - "3000:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      # Docker 内部使用服务名访问，而非 localhost
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lightborrow
+      - SPRING_DATA_REDIS_HOST=redis
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:?请设置 DEEPSEEK_API_KEY 环境变量}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

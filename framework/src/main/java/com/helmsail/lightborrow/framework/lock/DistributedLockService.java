@@ -2,7 +2,6 @@ package com.helmsail.lightborrow.framework.lock;
 
 import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.FrameworkException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -10,11 +9,8 @@ import org.redisson.api.RedissonClient;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-/**
- * 分布式锁服务。基于 Redisson，支持自动续期（看门狗）。
- */
+/** 基于 Redisson，支持看门狗自动续期。 */
 @Slf4j
-@RequiredArgsConstructor
 public class DistributedLockService {
 
     private static final String LOCK_KEY_PREFIX = "lock:";
@@ -24,27 +20,14 @@ public class DistributedLockService {
 
     private final RedissonClient redissonClient;
 
-    /**
-     * 执行带锁的任务。
-     *
-     * @param key      锁的 key
-     * @param task     待执行任务
-     * @param <T>      返回值类型
-     * @return 任务执行结果
-     */
+    public DistributedLockService(RedissonClient redissonClient) {
+        this.redissonClient = redissonClient;
+    }
+
     public <T> T executeWithLock(String key, Supplier<T> task) {
         return executeWithLock(key, DEFAULT_WAIT_MILLIS, task);
     }
 
-    /**
-     * 执行带锁的任务。
-     *
-     * @param key       锁的 key
-     * @param waitMs    等待锁的超时时间（毫秒）
-     * @param task      待执行任务
-     * @param <T>       返回值类型
-     * @return 任务执行结果
-     */
     public <T> T executeWithLock(String key, long waitMs, Supplier<T> task) {
         RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + key);
         boolean locked = false;

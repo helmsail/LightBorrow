@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-/**
- * 对话消息。OpenAI 兼容格式，支持 system/user/assistant/tool 四种角色。
- * assistant 消息可包含 tool_calls，tool 消息包含 tool_call_id。
- */
+/** OpenAI 兼容格式，支持 system/user/assistant/tool 四种角色。 */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ChatMessage(
         String role,

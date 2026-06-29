@@ -1,21 +1,19 @@
 package com.helmsail.lightborrow.framework.redis;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Redis 操作服务。基于 StringRedisTemplate，提供常用操作封装。
- * 所有 Redis key 建议统一前缀管理。
- */
-@RequiredArgsConstructor
+/** 基于 StringRedisTemplate 的常用操作封装。 */
 public class RedisService {
 
     private final StringRedisTemplate stringRedisTemplate;
+
+    public RedisService(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     // ========== String 操作 ==========
 

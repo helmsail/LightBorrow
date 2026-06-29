@@ -8,10 +8,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-/**
- * 统一 API 返回体 {code, msg, data}。
- * 所有 Controller 接口统一使用此类型返回。
- */
+/** 统一 API 返回体 {code, msg, data}。*/
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,11 +19,8 @@ public class Result<T> implements Serializable {
     public static final int SUCCESS_CODE = 200;
     public static final String SUCCESS_MSG = "操作成功";
 
-    /** 状态码 */
     private int code;
-    /** 提示信息 */
     private String msg;
-    /** 返回数据 */
     private T data;
 
     private Result() {
@@ -67,7 +61,7 @@ public class Result<T> implements Serializable {
     }
 
     public static <T> Result<T> error(ErrorCode errorCode, Object... args) {
-        return new Result<>(errorCode.getCode(), errorCode.getMessage(args), null);
+        return new Result<>(errorCode.getCode(), errorCode.formatMessage(args), null);
     }
 
     public static <T> Result<T> error(BusinessException e) {

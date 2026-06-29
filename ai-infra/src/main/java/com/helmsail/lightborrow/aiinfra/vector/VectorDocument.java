@@ -1,12 +1,14 @@
 package com.helmsail.lightborrow.aiinfra.vector;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 向量文档。id + embedding + metadata + 可选距离。
  */
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class VectorDocument {
 

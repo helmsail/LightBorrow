@@ -1,103 +1,129 @@
 package com.helmsail.lightborrow.mcp.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.helmsail.lightborrow.framework.exception.BusinessException;
+import com.helmsail.lightborrow.mcp.mapper.AssetMapper;
+import com.helmsail.lightborrow.mcp.mapper.BorrowMapper;
+import com.helmsail.lightborrow.mcp.mapper.TransferMapper;
+import com.helmsail.lightborrow.mcp.model.entity.AssetEntity;
+import com.helmsail.lightborrow.mcp.model.entity.BorrowEntity;
+import com.helmsail.lightborrow.mcp.model.entity.TransferEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * 资产业务服务。封装对 asset/borrow/transfer 表的 JDBC 操作。
- */
 @Slf4j
 public class AssetService {
 
-    private static final int DEFAULT_LIMIT = 20;
+    private final AssetMapper assetMapper;
+    private final BorrowMapper borrowMapper;
+    private final TransferMapper transferMapper;
 
-    private final JdbcTemplate jdbcTemplate;
-
-    public AssetService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AssetService(AssetMapper assetMapper, BorrowMapper borrowMapper,
+                        TransferMapper transferMapper) {
+        this.assetMapper = assetMapper;
+        this.borrowMapper = borrowMapper;
+        this.transferMapper = transferMapper;
     }
 
     public List<Map<String, Object>> queryAsset(String code, String name, String keyword,
                                                  int limit, int offset) {
-        List<String> conditions = new ArrayList<>(4);
-        List<Object> params = new ArrayList<>(8);
+        LambdaQueryWrapper<AssetEntity> wrapper = Wrappers.lambdaQuery();
         if (code != null && !code.isBlank()) {
-            conditions.add("code = ?");
-            params.add(code);
+            wrapper.eq(AssetEntity::getCode, code);
         }
         if (name != null && !name.isBlank()) {
-            conditions.add("name ILIKE ?");
-            params.add(name);
+            wrapper.like(AssetEntity::getName, name);
         }
         if (keyword != null && !keyword.isBlank()) {
-            conditions.add("(name ILIKE ? OR description ILIKE ?)");
-            params.add(keyword);
-            params.add(keyword);
+            wrapper.and(w -> w.like(AssetEntity::getName, keyword)
+                    .or().like(AssetEntity::getDescription, keyword));
         }
+        wrapper.orderByAsc(AssetEntity::getId);
 
-        String where = conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
-        String sql = "SELECT * FROM asset" + where + " ORDER BY id LIMIT ? OFFSET ?";
-        params.add(Math.min(limit, 100));
-        params.add(Math.max(offset, 0));
-        return jdbcTemplate.queryForList(sql, params.toArray());
+        IPage<AssetEntity> page = assetMapper.selectPage(
+                new Page<>(offset / Math.max(limit, 1) + 1, Math.min(limit, 100)), wrapper);
+
+        return page.getRecords().stream().map(e -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", e.getId());
+            map.put("code", e.getCode());
+            map.put("name", e.getName());
+            map.put("description", e.getDescription());
+            map.put("status", e.getStatus());
+            map.put("created_at", e.getCreatedAt());
+            map.put("updated_at", e.getUpdatedAt());
+            return map;
+        }).collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> queryMyBorrows(String userId, int limit, int offset) {
-        String sql = """
-                SELECT b.*, a.name AS asset_name, a.code AS asset_code
-                FROM borrow b
-                JOIN asset a ON b.asset_id = a.id
-                WHERE b.user_id = ?
-                ORDER BY b.created_at DESC
-                LIMIT ? OFFSET ?
-                """;
-        return jdbcTemplate.queryForList(sql, userId, Math.min(limit, 100), Math.max(offset, 0));
+        IPage<Map<String, Object>> page = borrowMapper.selectMyBorrows(
+                new Page<>(offset / Math.max(limit, 1) + 1, Math.min(limit, 100)), userId);
+        return page.getRecords();
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void submitBorrow(String userId, String assetCode, String reason, String expectedReturnAt) {
-        String sql = """
-                INSERT INTO borrow (user_id, asset_id, reason, expected_return_at, status, created_at)
-                SELECT ?, a.id, ?, ?, 'pending', NOW()
-                FROM asset a WHERE a.code = ?
-                """;
-        jdbcTemplate.update(sql, userId, reason, expectedReturnAt, assetCode);
+        LambdaQueryWrapper<AssetEntity> wrapper = Wrappers.<AssetEntity>lambdaQuery()
+                .eq(AssetEntity::getCode, assetCode);
+        AssetEntity asset = assetMapper.selectOne(wrapper);
+        if (asset == null) {
+            throw new BusinessException("资产不存在: " + assetCode);
+        }
+
+        BorrowEntity borrow = new BorrowEntity();
+        borrow.setUserId(userId);
+        borrow.setAssetId(asset.getId());
+        borrow.setReason(reason);
+        borrow.setExpectedReturnAt(expectedReturnAt != null ? LocalDate.parse(expectedReturnAt) : null);
+        borrow.setStatus("pending");
+        borrowMapper.insert(borrow);
         log.info("[MCP] 借用申请提交 userId={}, assetCode={}", userId, assetCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void submitTransfer(String fromUserId, String borrowId, String toUserId) {
-        String sql = """
-                INSERT INTO transfer (from_user_id, borrow_id, to_user_id, status, created_at)
-                VALUES (?, ?, ?, 'pending', NOW())
-                """;
-        jdbcTemplate.update(sql, fromUserId, borrowId, toUserId);
+        TransferEntity transfer = new TransferEntity();
+        transfer.setFromUserId(fromUserId);
+        transfer.setBorrowId(Integer.valueOf(borrowId));
+        transfer.setToUserId(toUserId);
+        transfer.setStatus("pending");
+        transferMapper.insert(transfer);
         log.info("[MCP] 转借发起 fromUserId={}, borrowId={}, toUserId={}", fromUserId, borrowId, toUserId);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void cancelBorrow(String borrowId, String userId) {
-        String sql = "UPDATE borrow SET status = 'cancelled', updated_at = NOW() WHERE id = ? AND user_id = ?";
-        int rows = jdbcTemplate.update(sql, borrowId, userId);
+        int rows = borrowMapper.update(
+                Wrappers.<BorrowEntity>lambdaUpdate()
+                        .set(BorrowEntity::getStatus, "cancelled")
+                        .eq(BorrowEntity::getId, Integer.valueOf(borrowId))
+                        .eq(BorrowEntity::getUserId, userId));
         if (rows == 0) {
             log.warn("[MCP] 取消借用失败: borrowId={}, userId={}", borrowId, userId);
-            throw new IllegalStateException("取消借用失败：未找到对应的借用记录或无权操作");
+            throw new BusinessException("取消借用失败：未找到对应的借用记录或无权操作");
         }
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void confirmTransfer(String transferId, String userId) {
-        String sql = "UPDATE transfer SET status = 'confirmed', updated_at = NOW() WHERE id = ? AND to_user_id = ?";
-        int rows = jdbcTemplate.update(sql, transferId, userId);
+        int rows = transferMapper.update(
+                Wrappers.<TransferEntity>lambdaUpdate()
+                        .set(TransferEntity::getStatus, "confirmed")
+                        .eq(TransferEntity::getId, Integer.valueOf(transferId))
+                        .eq(TransferEntity::getToUserId, userId));
         if (rows == 0) {
             log.warn("[MCP] 确认转借失败: transferId={}, userId={}", transferId, userId);
-            throw new IllegalStateException("确认转借失败：未找到对应的转借记录或无权操作");
+            throw new BusinessException("确认转借失败：未找到对应的转借记录或无权操作");
         }
     }
 }

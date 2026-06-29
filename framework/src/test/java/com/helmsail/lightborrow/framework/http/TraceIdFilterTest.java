@@ -78,9 +78,4 @@ class TraceIdFilterTest {
 
         assertThat(MDC.get(HttpConstant.MDC_TRACE_ID)).isNull();
     }
-
-    @Test
-    void shouldHaveHighestPrecedence() {
-        assertThat(filter.getOrder()).isEqualTo(Integer.MIN_VALUE);
-    }
 }

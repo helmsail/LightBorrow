@@ -23,15 +23,14 @@
 		<module>memory</module>
 		<module>rag</module>
 		<module>core</module>
-		<module>gateway</module>
 	</modules>
 
 	<properties>
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<redisson.version>3.52.0</redisson.version>
-		<resilience4j.version>2.3.0</resilience4j.version>
-		<bucket4j.version>8.16.1</bucket4j.version>
+		<mybatis-plus.version>3.5.10</mybatis-plus.version>
+		<sentinel.version>1.8.8</sentinel.version>
 	</properties>
 
 	<dependencyManagement>
@@ -42,19 +41,19 @@
 				<version>${redisson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.resilience4j</groupId>
-				<artifactId>resilience4j-spring-boot3</artifactId>
-				<version>${resilience4j.version}</version>
+				<groupId>com.baomidou</groupId>
+				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+				<version>${mybatis-plus.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.bucket4j</groupId>
-				<artifactId>bucket4j_jdk17-core</artifactId>
-				<version>${bucket4j.version}</version>
+				<groupId>com.alibaba.csp</groupId>
+				<artifactId>sentinel-core</artifactId>
+				<version>${sentinel.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.bucket4j</groupId>
-				<artifactId>bucket4j_jdk17-redisson</artifactId>
-				<version>${bucket4j.version}</version>
+				<groupId>com.alibaba.csp</groupId>
+				<artifactId>sentinel-parameter-flow-control</artifactId>
+				<version>${sentinel.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -77,38 +76,22 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>default-compile</id>
-							<phase>compile</phase>
-							<goals>
-								<goal>compile</goal>
-							</goals>
-							<configuration>
-								<annotationProcessorPaths>
-									<path>
-										<groupId>org.projectlombok</groupId>
-										<artifactId>lombok</artifactId>
-									</path>
-								</annotationProcessorPaths>
-							</configuration>
-						</execution>
-						<execution>
-							<id>default-testCompile</id>
-							<phase>test-compile</phase>
-							<goals>
-								<goal>testCompile</goal>
-							</goals>
-							<configuration>
-								<annotationProcessorPaths>
-									<path>
-										<groupId>org.projectlombok</groupId>
-										<artifactId>lombok</artifactId>
-									</path>
-								</annotationProcessorPaths>
-							</configuration>
-						</execution>
-					</executions>
+					<configuration>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<forkCount>1</forkCount>
+						<reuseForks>false</reuseForks>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

@@ -9,6 +9,7 @@ export interface ChatMessage {
 /** 发送消息请求 */
 export interface ChatRequest {
   userId: string
+  sessionId?: string
   content: string
 }
 

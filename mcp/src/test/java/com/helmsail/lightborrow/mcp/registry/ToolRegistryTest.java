@@ -40,16 +40,13 @@ class ToolRegistryTest {
     }
 
     @Test
-    void hasToolShouldReturnTrueForRegisteredTool() {
+    void hasToolShouldReturnFalseForEmptyRegistry() {
         ApplicationContext appCtx = mock(ApplicationContext.class);
         when(appCtx.getBeanDefinitionNames()).thenReturn(new String[0]);
 
         ToolRegistry registry = new ToolRegistry(appCtx);
         registry.onContextRefreshed(null);
 
-        // Manually inject a tool via reflection-like approach
-        // ToolRegistry only has package-private methods, so we use invoke to add
-        // Actually we can't directly add. But hasTool on empty registry returns false.
         assertThat(registry.hasTool("nonexistent")).isFalse();
     }
 

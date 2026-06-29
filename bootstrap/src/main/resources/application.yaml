@@ -38,8 +38,19 @@ info:
     name: ${spring.application.name}
     version: @project.version@
 
-# Gateway 限流配置
-lightborrow:
-  gateway:
-    rate-limit-window-seconds: 60
-    rate-limit-max-requests: 20
+# ============================================================================
+# AI 通用配置（所有 profile 共享，API Key 从环境变量读取）
+#   LLM：DeepSeek
+#   Embedding：由各 profile 自行配置（DeepSeek 不支持 Embedding API）
+#   各 profile 可覆盖 model / base-url 等差异项
+#
+#   Docker 内部运行时，docker-compose.yml 通过 SPRING_ 环境变量覆盖数据源配置
+# ============================================================================
+ai:
+  llm:
+    base-url: https://api.deepseek.com
+    api-key: ${DEEPSEEK_API_KEY:}
+    model: deepseek-chat
+  vector:
+    enabled: false
+    table-name: vector_documents

@@ -11,10 +11,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 对话历史阶段。从 Redis List {@code history:{userId}} 加载/保存消息。
- * 滑动窗口维护最近 N 条消息。
- */
 @Slf4j
 public class HistoryStage implements MemoryStage {
 
@@ -25,17 +21,21 @@ public class HistoryStage implements MemoryStage {
 
     public HistoryStage(StringRedisTemplate stringRedisTemplate, MemoryProperties properties) {
         this.stringRedisTemplate = stringRedisTemplate;
-        this.maxHistory = properties != null ? properties.getMaxHistory() : 20;
+        this.maxHistory = properties.getMaxHistory();
     }
 
     @Override
     public void load(MemoryContext ctx) {
+        if (stringRedisTemplate == null) {
+            ctx.setHistoryMessages(new ArrayList<>());
+            return;
+        }
         try {
-            String key = HISTORY_KEY_PREFIX + ctx.getUserId();
+            String key = historyKey(ctx.getUserId(), ctx.getSessionId());
             List<String> messages = stringRedisTemplate.opsForList().range(key, -maxHistory, -1);
             ctx.setHistoryMessages(messages != null ? messages : new ArrayList<>());
-            log.debug("[Memory] 历史加载 userId={}, count={}", ctx.getUserId(),
-                    ctx.getHistoryMessages().size());
+            log.debug("[Memory] 历史加载 userId={}, sessionId={}, count={}", ctx.getUserId(),
+                    ctx.getSessionId(), ctx.getHistoryMessages().size());
         } catch (DataAccessException e) {
             log.error("[Memory] 历史加载失败 userId={}", ctx.getUserId(), e);
             throw new MemoryException(ErrorCode.MEMORY_HISTORY_FAILED, e, ctx.getUserId());
@@ -44,8 +44,9 @@ public class HistoryStage implements MemoryStage {
 
     @Override
     public void save(MemoryContext ctx) {
+        if (stringRedisTemplate == null) return;
         try {
-            String key = HISTORY_KEY_PREFIX + ctx.getUserId();
+            String key = historyKey(ctx.getUserId(), ctx.getSessionId());
             Long size = stringRedisTemplate.opsForList().size(key);
             if (size != null && size > maxHistory) {
                 stringRedisTemplate.opsForList().trim(key, size - maxHistory, -1);
@@ -56,10 +57,10 @@ public class HistoryStage implements MemoryStage {
         }
     }
 
-    /** 追加单条消息到历史。超出窗口自动裁剪。 */
-    public void appendMessage(String userId, String messageJson) {
+    public void appendMessage(String userId, String sessionId, String messageJson) {
+        if (stringRedisTemplate == null) return;
         try {
-            String key = HISTORY_KEY_PREFIX + userId;
+            String key = historyKey(userId, sessionId);
             stringRedisTemplate.opsForList().rightPush(key, messageJson);
             Long size = stringRedisTemplate.opsForList().size(key);
             if (size != null && size > maxHistory) {
@@ -69,5 +70,10 @@ public class HistoryStage implements MemoryStage {
             log.error("[Memory] 消息追加失败 userId={}", userId, e);
             throw new MemoryException(ErrorCode.MEMORY_HISTORY_FAILED, e, userId);
         }
+    }
+
+    /** history 改为按 sessionId 隔离：history:{userId}:{sessionId} */
+    private static String historyKey(String userId, String sessionId) {
+        return sessionId != null ? HISTORY_KEY_PREFIX + userId + ":" + sessionId : HISTORY_KEY_PREFIX + userId;
     }
 }

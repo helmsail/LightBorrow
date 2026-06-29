@@ -1,6 +1,9 @@
 package com.helmsail.lightborrow.mcp.config;
 
 import com.helmsail.lightborrow.mcp.registry.ToolRegistry;
+import com.helmsail.lightborrow.mcp.mapper.AssetMapper;
+import com.helmsail.lightborrow.mcp.mapper.BorrowMapper;
+import com.helmsail.lightborrow.mcp.mapper.TransferMapper;
 import com.helmsail.lightborrow.mcp.service.AssetService;
 import com.helmsail.lightborrow.mcp.tools.AskUserConfirmTool;
 import com.helmsail.lightborrow.mcp.tools.AskUserQuestionTool;
@@ -11,18 +14,11 @@ import com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-
-/**
- * MCP 模块自动配置。
- */
 @AutoConfiguration
 @AutoConfigureAfter(RagAutoConfiguration.class)
 public class McpAutoConfiguration {
@@ -47,9 +43,9 @@ public class McpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnClass({DataSource.class, JdbcTemplate.class})
-    public AssetService assetService(JdbcTemplate jdbcTemplate) {
-        return new AssetService(jdbcTemplate);
+    public AssetService assetService(AssetMapper assetMapper, BorrowMapper borrowMapper,
+                                      TransferMapper transferMapper) {
+        return new AssetService(assetMapper, borrowMapper, transferMapper);
     }
 
     @Bean

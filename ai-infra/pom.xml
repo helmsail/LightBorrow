@@ -24,22 +24,16 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Web（RestClient + WebClient） -->
+        <!-- Web（RestClient） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- WebFlux（流式 SSE 调用） -->
+        <!-- MyBatis-Plus for PgVectorStore -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
-        <!-- JDBC（pgvector 向量库） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <optional>true</optional>
         </dependency>
 
@@ -48,12 +42,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Resilience4j 重试熔断 -->
-        <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-spring-boot3</artifactId>
         </dependency>
 
         <!-- Lombok -->

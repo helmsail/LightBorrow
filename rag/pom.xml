@@ -29,15 +29,17 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Web（library 模块标记 optional） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <optional>true</optional>
         </dependency>
 
-        <!-- JDBC for vector store access -->
+        <!-- MyBatis-Plus for vector store access -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <optional>true</optional>
         </dependency>
 

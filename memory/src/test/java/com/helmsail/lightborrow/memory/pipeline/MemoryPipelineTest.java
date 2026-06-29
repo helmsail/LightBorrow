@@ -21,7 +21,7 @@ class MemoryPipelineTest {
 
         MemoryPipeline pipeline = new MemoryPipeline(List.of(stage1, stage2, stage3), historyStage);
 
-        MemoryContext ctx = pipeline.load("user123");
+        MemoryContext ctx = pipeline.load("user123", null);
 
         assertThat(ctx.getUserId()).isEqualTo("user123");
         verify(stage1).load(any(MemoryContext.class));
@@ -41,7 +41,6 @@ class MemoryPipelineTest {
         MemoryContext ctx = MemoryContext.builder().userId("user123").build();
         pipeline.save(ctx);
 
-        // Inorder verification: stage3 first, then stage2, then stage1
         InOrder inOrder = inOrder(stage1, stage2, stage3);
         inOrder.verify(stage3).save(any(MemoryContext.class));
         inOrder.verify(stage2).save(any(MemoryContext.class));
@@ -53,7 +52,7 @@ class MemoryPipelineTest {
         HistoryStage historyStage = mock(HistoryStage.class);
         MemoryPipeline pipeline = new MemoryPipeline(List.of(), historyStage);
 
-        MemoryContext ctx = pipeline.load("user123");
+        MemoryContext ctx = pipeline.load("user123", null);
 
         assertThat(ctx).isNotNull();
         assertThat(ctx.getUserId()).isEqualTo("user123");
@@ -65,7 +64,7 @@ class MemoryPipelineTest {
         MemoryPipeline pipeline = new MemoryPipeline(List.of(), historyStage);
 
         MemoryContext ctx = MemoryContext.builder().userId("user123").build();
-        pipeline.save(ctx); // should not throw
+        pipeline.save(ctx);
     }
 
     @Test
@@ -73,8 +72,8 @@ class MemoryPipelineTest {
         HistoryStage historyStage = mock(HistoryStage.class);
         MemoryPipeline pipeline = new MemoryPipeline(List.of(), historyStage);
 
-        pipeline.appendHistory("user123", "{\"msg\":\"hello\"}");
+        pipeline.appendHistory("user123", null, "{\"msg\":\"hello\"}");
 
-        verify(historyStage).appendMessage("user123", "{\"msg\":\"hello\"}");
+        verify(historyStage).appendMessage("user123", null, "{\"msg\":\"hello\"}");
     }
 }

@@ -2,6 +2,7 @@ package com.helmsail.lightborrow.mcp.tools;
 
 import com.helmsail.lightborrow.mcp.annotation.McpParam;
 import com.helmsail.lightborrow.mcp.annotation.McpTool;
+import com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -10,9 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RagSearchTool {
 
-    private final com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline ragOnlinePipeline;
+    private final RagOnlinePipeline ragOnlinePipeline;
 
-    public RagSearchTool(com.helmsail.lightborrow.rag.pipeline.online.RagOnlinePipeline ragOnlinePipeline) {
+    public RagSearchTool(RagOnlinePipeline ragOnlinePipeline) {
         this.ragOnlinePipeline = ragOnlinePipeline;
     }
 

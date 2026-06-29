@@ -8,9 +8,7 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 
-/**
- * RestClient 日志拦截器。记录 HTTP 请求耗时、状态码。
- */
+/** 记录 HTTP 请求耗时、状态码。 */
 @Slf4j
 public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 

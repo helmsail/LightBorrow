@@ -5,7 +5,6 @@ import com.helmsail.lightborrow.framework.model.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -21,14 +20,9 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.StringJoiner;
 
-/**
- * 全局异常处理器。统一返回 {@link Result} 格式。
- * 子模块可通过定义同名 {@code GlobalExceptionHandler} 覆盖此默认实现
- * （利用 {@code @ConditionalOnMissingBean} 机制）。
- */
+/** 统一返回 {@link Result} 格式。 */
 @Slf4j
 @RestControllerAdvice
-@ConditionalOnMissingBean(GlobalExceptionHandler.class)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
@@ -81,22 +75,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public Result<Void> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        log.warn("[请求方法] 不支持: {}", e.getMethod());
         return Result.error(HttpStatus.METHOD_NOT_ALLOWED.value(), "请求方法不支持: " + e.getMethod());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public Result<Void> handleNoResource(NoResourceFoundException e) {
+        log.warn("[资源不存在] {}", e.getMessage());
         return Result.error(HttpStatus.NOT_FOUND.value(), "资源不存在");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Result<Void> handleMessageNotReadable(HttpMessageNotReadableException e) {
-        log.warn("[参数校验] 请求体格式错误: {}", e.getMessage());
+        log.warn("[请求体格式] 错误: {}", e.getMessage());
         return Result.error(HttpStatus.BAD_REQUEST.value(), "请求数据格式错误");
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public Result<Void> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        log.warn("[Content-Type] 不支持: {}", e.getContentType());
         return Result.error(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), "不支持的 Content-Type: " + e.getContentType());
     }
 

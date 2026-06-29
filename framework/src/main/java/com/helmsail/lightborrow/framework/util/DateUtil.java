@@ -1,17 +1,13 @@
 package com.helmsail.lightborrow.framework.util;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 日期工具类。基于 Java 8 Time API，线程安全。
- */
+/** 基于 java.time，线程安全。 */
 public final class DateUtil {
 
     public static final String DEFAULT_PATTERN = "yyyy-MM-dd HH:mm:ss";

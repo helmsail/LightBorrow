@@ -16,10 +16,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * Web 自动配置。注册 TraceId 过滤器、MDC 上下文传递装饰器、CORS 跨域配置。
+ * 注册 TraceId 过滤器、MDC 上下文传递装饰器、CORS 跨域配置。
+ *
+ * CORS 生产安全：allowedOrigins 默认空列表，生产环境必须在 application.yaml 中
+ * 配置 lightborrow.http.allowed-origins 显式指定域名。
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
@@ -37,18 +41,16 @@ public class WebConfig {
         return registration;
     }
 
-    /**
-     * CORS 全局跨域配置（允许开发环境前端 localhost:5173 访问）。
-     * 生产环境可在 application.yaml 中通过 lightborrow.cors.allowed-origins 覆盖。
-     */
+    /** CORS 配置：allowedOrigins 默认空列表，生产必须显式配置 */
     @Bean
     @ConditionalOnMissingBean
-    public WebMvcConfigurer corsConfigurer() {
+    public WebMvcConfigurer corsConfigurer(HttpProperties httpProperties) {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+                List<String> origins = httpProperties.getAllowedOrigins();
                 registry.addMapping("/api/**")
-                        .allowedOriginPatterns("*")
+                        .allowedOriginPatterns(origins.toArray(String[]::new))
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true)
@@ -57,10 +59,7 @@ public class WebConfig {
         };
     }
 
-    /**
-     * MDC 上下文传递装饰器。解决 @Async / 线程池不继承父线程 MDC 的问题。
-     * 在 finally 中总是清理，防止线程池中不同请求间的上下文泄漏。
-     */
+    /** 解决 @Async / 线程池不继承父线程 MDC 的问题，finally 中清理防止上下文泄漏 */
     @Bean
     @ConditionalOnMissingBean
     public TaskDecorator mdcTaskDecorator() {

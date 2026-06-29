@@ -4,9 +4,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
-/**
- * 工具定义。描述工具的元数据及可执行句柄。
- */
+/** 描述工具的元数据及可执行句柄。 */
 @Getter
 public class ToolDefinition {
 
@@ -24,12 +22,7 @@ public class ToolDefinition {
         this.executor = executor;
     }
 
-    /**
-     * 执行工具。
-     *
-     * @param args 参数 Map
-     * @return 工具执行结果字符串
-     */
+    /** @param args 参数 Map @return 工具执行结果字符串 */
     public String execute(Map<String, Object> args) {
         return executor.execute(args);
     }

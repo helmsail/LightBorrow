@@ -10,9 +10,7 @@ import com.helmsail.lightborrow.framework.constant.ErrorCode;
 import com.helmsail.lightborrow.framework.exception.FrameworkException;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Jackson JSON 工具封装。持有独立 ObjectMapper 兜底，Spring 启动后注入已配置的 ObjectMapper。
- */
+/** Spring 启动后注入已配置的 ObjectMapper。 */
 @Slf4j
 public final class JsonUtil {
 
@@ -56,6 +54,19 @@ public final class JsonUtil {
 
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
+    }
+
+    /**
+     * 将 float[] 转换为 pgvector 字符串格式，如 '[0.1,0.2,0.3]'。
+     */
+    public static String toPgVector(float[] embedding) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < embedding.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(embedding[i]);
+        }
+        sb.append(']');
+        return sb.toString();
     }
 
     private static ObjectMapper createDefaultMapper() {

@@ -28,10 +28,17 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-        <!-- JDBC for ProfileStage -->
+        <!-- MyBatis-Plus for ProfileStage -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+
+        <!-- AI Infra for SummaryStage -->
+        <dependency>
+            <groupId>com.helmsail</groupId>
+            <artifactId>lightborrow-ai-infra</artifactId>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
